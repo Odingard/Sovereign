@@ -1,0 +1,11 @@
+{
+  "name": "@sovereign/provider-workflow-google",
+  "version": "0.1.0",
+  "description": "Google Cloud Workflows Orchestration Provider Adapter",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

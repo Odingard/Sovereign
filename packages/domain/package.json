@@ -1,0 +1,11 @@
+{
+  "name": "@sovereign/domain",
+  "version": "0.1.0",
+  "description": "Sovereign Canonical Domain Model - Pure Domain Logic & Invariants",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {}
+}

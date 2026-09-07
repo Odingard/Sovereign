@@ -1,0 +1,11 @@
+{
+  "name": "@sovereign/adapter-pharmacy",
+  "version": "0.1.0",
+  "description": "Sovereign Specialty Pharmacy Integration Port Adapter",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

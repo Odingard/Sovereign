@@ -1,0 +1,11 @@
+{
+  "name": "@sovereign/provider-workflow-temporal",
+  "version": "0.1.0",
+  "description": "Temporal Workflow Orchestration Provider (Behind WorkflowRuntime Port)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

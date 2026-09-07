@@ -1,0 +1,11 @@
+{
+  "name": "@sovereign/provider-ai-fake",
+  "version": "0.1.0",
+  "description": "Deterministic Fake AI Reasoning Provider for Local Dev and Evals",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

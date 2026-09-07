@@ -1,0 +1,11 @@
+{
+  "name": "@sovereign/adapter-payer",
+  "version": "0.1.0",
+  "description": "Sovereign Payer and Electronic Prior Authorization Port Adapter",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

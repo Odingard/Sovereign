@@ -1,0 +1,43 @@
+title = "Sovereign Gitleaks Secret & PHI Detection Configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key Detection"
+regex = '''(?i)(?:key|api_key|apikey|secret|token)\s*[:=]\s*['"][0-9a-zA-Z\-_]{16,}['"]'''
+entropy = 3.5
+keywords = ["key", "api_key", "secret", "token"]
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI Secret Key"
+regex = '''sk-[a-zA-Z0-9]{32,}'''
+keywords = ["sk-"]
+
+[[rules]]
+id = "google-cloud-api-key"
+description = "Google Cloud API Key"
+regex = '''AIza[0-9A-Za-z\\-_]{35}'''
+keywords = ["AIza"]
+
+[[rules]]
+id = "private-key"
+description = "Private Key Header"
+regex = '''-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----'''
+keywords = ["BEGIN", "PRIVATE", "KEY"]
+
+[[rules]]
+id = "potential-ssn"
+description = "Potential Social Security Number (Real PHI Violation)"
+regex = '''\b(?!000|666|9\d{2})\d{3}-(?!00)\d{2}-(?!0000)\d{4}\b'''
+keywords = ["ssn", "social"]
+
+[allowlist]
+description = "Allowed files and test fixtures"
+paths = [
+    '''\.gitleaks\.toml$''',
+    '''scripts/verify-synthetic-data\.ts$''',
+    '''work-orders/WO-000-cloud-security-phi-gate\.md$'''
+]

@@ -1,0 +1,10 @@
+{
+  "name": "@sovereign/audit",
+  "version": "0.1.0",
+  "description": "Sovereign Audit - Tamper-Evident Append-Only Clinical & Operational Event Logging",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@sovereign/domain": "workspace:*"
+  }
+}

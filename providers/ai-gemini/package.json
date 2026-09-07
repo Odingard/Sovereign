@@ -1,0 +1,11 @@
+{
+  "name": "@sovereign/provider-ai-gemini",
+  "version": "0.1.0",
+  "description": "Google Gemini Enterprise AI Reasoning Provider Adapter (Behind Port)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

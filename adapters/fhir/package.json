@@ -1,0 +1,11 @@
+{
+  "name": "@sovereign/adapter-fhir",
+  "version": "0.1.0",
+  "description": "Sovereign FHIR R4 Transport Adapter (FHIR is transport, not domain truth)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}
