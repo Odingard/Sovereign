@@ -1,71 +1,46 @@
 /**
- * @file Sovereign Canonical Domain Core
- * @description Pure domain entities, value objects, and invariant primitives.
+ * @file Sovereign Canonical Domain Core Public API
+ * @description Invariant: The model is not the system of record.
+ * The clinician decides; Sovereign makes the decision executable.
  *
- * DOCTRINE:
- * 1. Sovereign will never be the doctor.
- * 2. The clinician decides; Sovereign makes the decision executable.
- * 3. The model is not the system of record.
- * 4. AI may propose; AI may not directly mutate state or execute external actions.
- *
- * ARCHITECTURAL RULE:
- * This package must NEVER import any AI provider SDK, cloud SDK, workflow engine SDK, or vendor schema.
+ * This package has ZERO external dependencies on Google Cloud, Gemini,
+ * Temporal, FHIR libraries, EHR vendor SDKs, or web frameworks.
  */
 
-export type Brand<K, T> = K & { readonly __brand: T };
+// Common
+export * from "./common/identifiers.js";
+export * from "./common/epistemic-status.js";
+export * from "./common/temporal-window.js";
+export * from "./common/authority-class.js";
+export * from "./common/lifecycle-state.js";
+export * from "./common/data-classification.js";
+export * from "./common/domain-error.js";
+export * from "./common/versioning.js";
 
-export type TenantId = Brand<string, 'TenantId'>;
-export type PatientId = Brand<string, 'PatientId'>;
-export type EvidenceId = Brand<string, 'EvidenceId'>;
-export type IntentId = Brand<string, 'IntentId'>;
-export type ExecutionNodeId = Brand<string, 'ExecutionNodeId'>;
-export type TherapyAccessCaseId = Brand<string, 'TherapyAccessCaseId'>;
+// Aggregate 1: Clinical Evidence (Source & Provenance)
+export * from "./evidence/source-provenance.js";
+export * from "./evidence/evidence-assessment.js";
+export * from "./evidence/evidence-aggregate.js";
 
-/**
- * Epistemic truth values:
- * Unknown is NEVER negative. Absence of evidence is not evidence of absence.
- */
-export enum EpistemicStatus {
-  KNOWN = 'KNOWN',
-  UNKNOWN = 'UNKNOWN',
-  CONFLICTED = 'CONFLICTED',
-  REQUIRES_CLINICAL_DECISION = 'REQUIRES_CLINICAL_DECISION'
-}
+// Aggregate 2: Clinical State (Asserted Truth)
+export * from "./state/clinical-assertion.js";
+export * from "./state/clinical-state-aggregate.js";
 
-/**
- * Distinct lifecycle states.
- * Task execution or worker completion is NOT clinical completion.
- */
-export enum LifecycleState {
-  ATTEMPTED = 'ATTEMPTED',
-  TRANSMITTED = 'TRANSMITTED',
-  RECEIVED = 'RECEIVED',
-  ACCEPTED = 'ACCEPTED',
-  INITIATED = 'INITIATED',
-  COMPLETED = 'COMPLETED',
-  SUPERSEDED = 'SUPERSEDED',
-  CANCELLED = 'CANCELLED'
-}
+// Aggregate 3: Clinical Intent (Clinician Decisions)
+export * from "./intent/intent-lifecycle.js";
+export * from "./intent/intent-action.js";
+export * from "./intent/clinical-intent-aggregate.js";
 
-/**
- * Sovereign Authority Classes (ADR-0005)
- */
-export enum AuthorityClass {
-  CLASS_A_AUTONOMOUS_ADMIN = 'CLASS_A_AUTONOMOUS_ADMIN',
-  CLASS_B_ORG_POLICY = 'CLASS_B_ORG_POLICY',
-  CLASS_C_CLINICIAN_AUTH = 'CLASS_C_CLINICIAN_AUTH',
-  CLASS_D_CLINICAL_JUDGMENT = 'CLASS_D_CLINICAL_JUDGMENT'
-}
+// Aggregate 4: Execution Graph (Durable Task DAG)
+export * from "./execution/execution-states.js";
+export * from "./execution/execution-attempt.js";
+export * from "./execution/completion-confirmation.js";
+export * from "./execution/execution-node.js";
+export * from "./execution/execution-graph-aggregate.js";
 
-/**
- * Five Authoritative Domain Objects owned by Sovereign
- */
-export const AUTHORITATIVE_OBJECT_TYPES = [
-  'CLINICAL_STATE',
-  'CLINICAL_EVIDENCE_PROVENANCE',
-  'CLINICAL_INTENT',
-  'EXECUTION_GRAPH',
-  'THERAPY_ACCESS_STATE'
-] as const;
+// Aggregate 5: Therapy Access State (Longitudinal Operational Journey)
+export * from "./therapy-access/therapy-access-aggregate.js";
 
-export type AuthoritativeObjectType = (typeof AUTHORITATIVE_OBJECT_TYPES)[number];
+// Domain Events
+export * from "./events/domain-event.js";
+export * from "./events/aggregate-events.js";

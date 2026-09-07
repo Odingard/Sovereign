@@ -1,4 +1,4 @@
-import { LifecycleState } from '@sovereign/domain';
+import { LifecycleState } from "@sovereign/domain";
 
 export interface SpecialtyPrescriptionOrder {
   orderId: string;
@@ -7,10 +7,12 @@ export interface SpecialtyPrescriptionOrder {
 }
 
 export class MockPharmacyAdapter {
-  public async transmitPrescription(order: SpecialtyPrescriptionOrder): Promise<{ fulfillmentId: string; state: LifecycleState }> {
+  public async transmitPrescription(
+    order: SpecialtyPrescriptionOrder,
+  ): Promise<{ fulfillmentId: string; state: LifecycleState }> {
     return {
       fulfillmentId: `PHARM-FULFILL-${order.orderId}`,
-      state: LifecycleState.TRANSMITTED
+      state: LifecycleState.TRANSMITTED,
     };
   }
 }

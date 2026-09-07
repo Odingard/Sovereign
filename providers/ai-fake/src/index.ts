@@ -1,10 +1,10 @@
-import { randomUUID } from 'node:crypto';
-import { EpistemicStatus } from '@sovereign/domain';
+import { randomUUID } from "node:crypto";
 import type {
   AICandidateRequest,
   AICandidateResponse,
-  AIReasoningProvider
-} from '@sovereign/contracts';
+  AIReasoningProvider,
+} from "@sovereign/contracts";
+import { EpistemicStatus } from "@sovereign/domain";
 
 /**
  * Deterministic Fake AI Provider
@@ -14,22 +14,22 @@ import type {
  * Contains zero network calls, zero credentials, zero PHI.
  */
 export class FakeAIReasoningProvider implements AIReasoningProvider {
-  public readonly providerId = 'sovereign-fake-ai-v1';
+  public readonly providerId = "sovereign-fake-ai-v1";
 
   public async generateCandidate(request: AICandidateRequest): Promise<AICandidateResponse> {
     return {
       candidateId: randomUUID(),
       modelIdentifier: this.providerId,
-      modelVersion: '1.0.0-synthetic',
+      modelVersion: "1.0.0-synthetic",
       confidenceScore: 0.95,
       epistemicStatus: EpistemicStatus.KNOWN,
       proposedStateCandidate: {
         task: request.taskType,
-        syntheticObservation: 'Rheumatoid arthritis moderate disease activity (CDAI 14.5)',
-        syntheticEvidenceReference: 'EVD-SYN-001'
+        syntheticObservation: "Rheumatoid arthritis moderate disease activity (CDAI 14.5)",
+        syntheticEvidenceReference: "EVD-SYN-001",
       },
-      sourceEvidenceIds: ['EVD-SYN-001'],
-      disclaimer: 'AI candidate carries no clinical authority; requires validation.'
+      sourceEvidenceIds: ["EVD-SYN-001"],
+      disclaimer: "AI candidate carries no clinical authority; requires validation.",
     };
   }
 }

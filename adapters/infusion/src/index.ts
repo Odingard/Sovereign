@@ -1,4 +1,4 @@
-import { LifecycleState } from '@sovereign/domain';
+import { LifecycleState } from "@sovereign/domain";
 
 export interface InfusionScheduleRequest {
   patientId: string;
@@ -7,10 +7,12 @@ export interface InfusionScheduleRequest {
 }
 
 export class MockInfusionAdapter {
-  public async scheduleInfusion(request: InfusionScheduleRequest): Promise<{ appointmentId: string; state: LifecycleState }> {
+  public async scheduleInfusion(
+    request: InfusionScheduleRequest,
+  ): Promise<{ appointmentId: string; state: LifecycleState }> {
     return {
       appointmentId: `INF-APP-${request.patientId.slice(0, 8)}`,
-      state: LifecycleState.ACCEPTED
+      state: LifecycleState.ACCEPTED,
     };
   }
 }

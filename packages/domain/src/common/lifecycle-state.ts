@@ -1,0 +1,14 @@
+/**
+ * @file Generic Lifecycle States
+ */
+
+export enum LifecycleState {
+  ATTEMPTED = "ATTEMPTED",
+  TRANSMITTED = "TRANSMITTED",
+  RECEIVED = "RECEIVED",
+  ACCEPTED = "ACCEPTED",
+  INITIATED = "INITIATED",
+  COMPLETED = "COMPLETED",
+  SUPERSEDED = "SUPERSEDED",
+  CANCELLED = "CANCELLED",
+}

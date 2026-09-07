@@ -19,6 +19,11 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/node": "^20.17.19",
+    "@types/pg": "^8.11.11",
+    "kysely": "^0.27.5",
+    "pg": "^8.13.1",
+    "@sovereign/domain": "workspace:*",
+    "@sovereign/persistence": "workspace:*",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8",

@@ -4,10 +4,12 @@ export interface EhrPatientRecordInput {
 }
 
 export class MockEhrAdapter {
-  public async fetchPatientContext(input: EhrPatientRecordInput): Promise<{ externalId: string; status: 'SYNTHETIC_READY' }> {
+  public async fetchPatientContext(
+    input: EhrPatientRecordInput,
+  ): Promise<{ externalId: string; status: "SYNTHETIC_READY" }> {
     return {
       externalId: input.externalEhrId,
-      status: 'SYNTHETIC_READY'
+      status: "SYNTHETIC_READY",
     };
   }
 }
