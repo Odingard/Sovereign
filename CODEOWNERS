@@ -1,0 +1,15 @@
+# Replace team slugs only through a governance PR before enforcement.
+* @sovereign-health-ai/maintainers
+/AGENTS.md @sovereign-health-ai/founder @sovereign-health-ai/architecture
+/docs/ @sovereign-health-ai/architecture
+/docs/CLINICAL_SAFETY.md @sovereign-health-ai/clinical-safety
+/docs/DATA_GOVERNANCE.md @sovereign-health-ai/security @sovereign-health-ai/privacy
+/docs/AUTHORITY_MODEL.md @sovereign-health-ai/clinical-safety @sovereign-health-ai/security
+/services/clinical-state/ @sovereign-health-ai/clinical-safety
+/services/clinical-intent/ @sovereign-health-ai/clinical-safety
+/services/verification/ @sovereign-health-ai/clinical-safety @sovereign-health-ai/security
+/services/execution/ @sovereign-health-ai/workflow @sovereign-health-ai/security
+/adapters/ @sovereign-health-ai/security @sovereign-health-ai/workflow
+/work-orders/ @sovereign-health-ai/architecture @sovereign-health-ai/qa
+/.agents/ @sovereign-health-ai/architecture
+
