@@ -109,10 +109,22 @@ export class ClinicalIntentAggregate {
     });
   }
 
-  public isExecutable(): boolean {
+  /**
+   * Indicates whether the intent has reached a decision milestone where
+   * constructing an Execution Graph and planning preparatory work is permitted.
+   *
+   * DOCTRINE:
+   * Intent is not authority. Discussion is not decision.
+   * This helper indicates ONLY eligibility for execution graph construction and workflow planning.
+   * It DOES NOT grant execution authority for any external clinical transaction.
+   * Actual executable permission must later be determined from:
+   * Clinical Intent + Execution Node + Authority Class + Policy + Actor authority + required evidence.
+   */
+  public isEligibleForExecutionPlanning(): boolean {
     return (
-      this.props.stage === ClinicalIntentStage.AUTHORIZED ||
-      this.props.stage === ClinicalIntentStage.ORDERED
+      this.props.stage === ClinicalIntentStage.DECIDED ||
+      this.props.stage === ClinicalIntentStage.ORDERED ||
+      this.props.stage === ClinicalIntentStage.AUTHORIZED
     );
   }
 }

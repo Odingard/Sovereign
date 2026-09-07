@@ -234,8 +234,8 @@ describe("Sovereign WO-001 Domain Invariant Tests", () => {
       ["EVD-001" as EvidenceId],
     );
 
-    // Discussion is not executable
-    expect(intent.isExecutable()).toBe(false);
+    // Discussion is not eligible for execution planning
+    expect(intent.isEligibleForExecutionPlanning()).toBe(false);
 
     // DISCUSSED directly to AUTHORIZED must fail
     expect(() => {
@@ -245,22 +245,23 @@ describe("Sovereign WO-001 Domain Invariant Tests", () => {
     // Step-by-step valid transitions
     const considered = intent.transitionStage(ClinicalIntentStage.CONSIDERED, clinicianActorId);
     expect(considered.props.stage).toBe(ClinicalIntentStage.CONSIDERED);
-    expect(considered.isExecutable()).toBe(false);
+    expect(considered.isEligibleForExecutionPlanning()).toBe(false);
 
     const recommended = considered.transitionStage(
       ClinicalIntentStage.RECOMMENDED,
       clinicianActorId,
     );
     expect(recommended.props.stage).toBe(ClinicalIntentStage.RECOMMENDED);
-    expect(recommended.isExecutable()).toBe(false);
+    expect(recommended.isEligibleForExecutionPlanning()).toBe(false);
 
     const decided = recommended.transitionStage(ClinicalIntentStage.DECIDED, clinicianActorId);
     expect(decided.props.stage).toBe(ClinicalIntentStage.DECIDED);
-    expect(decided.isExecutable()).toBe(false);
+    // DECIDED intent is eligible for execution planning (graph construction), but does NOT grant transaction authority
+    expect(decided.isEligibleForExecutionPlanning()).toBe(true);
 
     const ordered = decided.transitionStage(ClinicalIntentStage.ORDERED, clinicianActorId);
     expect(ordered.props.stage).toBe(ClinicalIntentStage.ORDERED);
-    expect(ordered.isExecutable()).toBe(true);
+    expect(ordered.isEligibleForExecutionPlanning()).toBe(true);
 
     const authorized = ordered.transitionStage(
       ClinicalIntentStage.AUTHORIZED,
@@ -269,7 +270,7 @@ describe("Sovereign WO-001 Domain Invariant Tests", () => {
     );
     expect(authorized.props.stage).toBe(ClinicalIntentStage.AUTHORIZED);
     expect(authorized.props.authorityReference).toBe("AUTH-REF-9988");
-    expect(authorized.isExecutable()).toBe(true);
+    expect(authorized.isEligibleForExecutionPlanning()).toBe(true);
 
     // From AUTHORIZED to CANCELLED is allowed
     const cancelled = authorized.transitionStage(ClinicalIntentStage.CANCELLED, clinicianActorId);

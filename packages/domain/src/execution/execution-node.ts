@@ -4,7 +4,7 @@
  */
 
 import type { AuthorityClass } from "../common/authority-class.js";
-import type { ExecutionNodeId } from "../common/identifiers.js";
+import type { EvidenceId, ExecutionNodeId } from "../common/identifiers.js";
 import type { CompletionConfirmation } from "./completion-confirmation.js";
 import type { ExternalExecutionAttempt } from "./execution-attempt.js";
 import type { ExecutionNodeState } from "./execution-states.js";
@@ -18,4 +18,6 @@ export interface ExecutionNodeProps {
   readonly attempts: ReadonlyArray<ExternalExecutionAttempt>;
   readonly completionConfirmation?: CompletionConfirmation;
   readonly failureReason?: string;
+  readonly requiredEvidenceIds?: ReadonlyArray<EvidenceId>;
+  readonly authorityGrantReference?: string;
 }

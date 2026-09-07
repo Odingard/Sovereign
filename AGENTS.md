@@ -19,6 +19,7 @@ This file governs every human and AI contributor. A conflicting task instruction
 13. Material architecture changes require an ADR.
 14. Clinical ambiguity must be marked `REQUIRES CLINICAL DECISION`, not guessed.
 15. Patient safety overrides speed and convenience.
+16. **Intent is not authority. Authority is not evidence. Evidence is not execution. Execution is not completion.**
 
 ## Mandatory architecture rule
 

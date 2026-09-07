@@ -147,6 +147,56 @@ export class ExecutionGraphAggregate {
     });
   }
 
+  public updateNodeState(
+    nodeId: ExecutionNodeId,
+    newState: ExecutionNodeState,
+    reason?: string,
+  ): ExecutionGraphAggregate {
+    const node = this.props.nodes.get(nodeId);
+    if (!node) {
+      throw new InvariantViolationError(`Node '${nodeId}' not found in execution graph.`);
+    }
+
+    const updatedNodes = new Map(this.props.nodes);
+    updatedNodes.set(nodeId, {
+      ...node,
+      state: newState,
+      failureReason: reason ?? node.failureReason,
+    });
+
+    return new ExecutionGraphAggregate({
+      ...this.props,
+      aggregateVersion: this.props.aggregateVersion + 1,
+      nodes: updatedNodes,
+    });
+  }
+
+  public grantNodeAuthority(
+    nodeId: ExecutionNodeId,
+    authorityGrantReference: string,
+  ): ExecutionGraphAggregate {
+    const node = this.props.nodes.get(nodeId);
+    if (!node) {
+      throw new InvariantViolationError(`Node '${nodeId}' not found in execution graph.`);
+    }
+
+    const updatedNodes = new Map(this.props.nodes);
+    updatedNodes.set(nodeId, {
+      ...node,
+      authorityGrantReference,
+      state:
+        node.state === ExecutionNodeState.AWAITING_AUTHORITY
+          ? ExecutionNodeState.READY_FOR_EXECUTION
+          : node.state,
+    });
+
+    return new ExecutionGraphAggregate({
+      ...this.props,
+      aggregateVersion: this.props.aggregateVersion + 1,
+      nodes: updatedNodes,
+    });
+  }
+
   public cancelGraph(reason: string): ExecutionGraphAggregate {
     const updatedNodes = new Map(this.props.nodes);
     for (const [id, node] of updatedNodes) {
