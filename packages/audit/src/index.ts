@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
-import type { TenantId, PatientId } from '@sovereign/domain';
+import { createHash } from "node:crypto";
+import type { PatientId, TenantId } from "@sovereign/domain";
 
 export interface AuditEventRecord {
   eventId: string;
@@ -14,11 +14,11 @@ export interface AuditEventRecord {
 
 export class AuditLogger {
   public static hashPayload(payload: Record<string, unknown>): string {
-    return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+    return createHash("sha256").update(JSON.stringify(payload)).digest("hex");
   }
 
   public static generateEventHash(event: AuditEventRecord): string {
-    const raw = `${event.eventId}:${event.tenantId}:${event.patientId}:${event.actorId}:${event.action}:${event.timestamp}:${event.payloadHash}:${event.prevHash || 'ROOT'}`;
-    return createHash('sha256').update(raw).digest('hex');
+    const raw = `${event.eventId}:${event.tenantId}:${event.patientId}:${event.actorId}:${event.action}:${event.timestamp}:${event.payloadHash}:${event.prevHash || "ROOT"}`;
+    return createHash("sha256").update(raw).digest("hex");
   }
 }

@@ -1,8 +1,5 @@
-import { randomUUID } from 'node:crypto';
-import type {
-  WorkflowExecutionHandle,
-  WorkflowRuntime
-} from '@sovereign/contracts';
+import { randomUUID } from "node:crypto";
+import type { WorkflowExecutionHandle, WorkflowRuntime } from "@sovereign/contracts";
 
 /**
  * Temporal Workflow Orchestration Provider
@@ -13,13 +10,16 @@ import type {
  * Sovereign PostgreSQL owns the canonical Execution Graph.
  */
 export class TemporalWorkflowRuntime implements WorkflowRuntime {
-  public readonly runtimeName = 'temporal-orchestrator';
+  public readonly runtimeName = "temporal-orchestrator";
 
-  public async dispatchActivity(nodeId: string, _payload: Record<string, unknown>): Promise<WorkflowExecutionHandle> {
+  public async dispatchActivity(
+    nodeId: string,
+    _payload: Record<string, unknown>,
+  ): Promise<WorkflowExecutionHandle> {
     return {
       workflowId: `wf-temporal-${nodeId}`,
       runId: randomUUID(),
-      scheduledAt: new Date()
+      scheduledAt: new Date(),
     };
   }
 

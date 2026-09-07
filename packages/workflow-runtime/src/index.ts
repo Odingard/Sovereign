@@ -1,4 +1,4 @@
-import type { WorkflowExecutionHandle, WorkflowRuntime } from '@sovereign/contracts';
+import type { WorkflowExecutionHandle, WorkflowRuntime } from "@sovereign/contracts";
 
 /**
  * Sovereign Workflow Orchestration Port
@@ -10,7 +10,10 @@ import type { WorkflowExecutionHandle, WorkflowRuntime } from '@sovereign/contra
 export class WorkflowDispatcher {
   constructor(private readonly runtime: WorkflowRuntime) {}
 
-  public async dispatchNode(nodeId: string, payload: Record<string, unknown>): Promise<WorkflowExecutionHandle> {
+  public async dispatchNode(
+    nodeId: string,
+    payload: Record<string, unknown>,
+  ): Promise<WorkflowExecutionHandle> {
     return this.runtime.dispatchActivity(nodeId, payload);
   }
 

@@ -1,9 +1,9 @@
-import { EpistemicStatus } from '@sovereign/domain';
 import type {
   AICandidateRequest,
   AICandidateResponse,
-  AIReasoningProvider
-} from '@sovereign/contracts';
+  AIReasoningProvider,
+} from "@sovereign/contracts";
+import { EpistemicStatus } from "@sovereign/domain";
 
 /**
  * Gemini Enterprise AI Reasoning Provider Adapter
@@ -14,11 +14,11 @@ import type {
  * ZERO-DATA-RETENTION: Mandatory
  */
 export class GeminiReasoningProvider implements AIReasoningProvider {
-  public readonly providerId = 'google-gemini-enterprise';
+  public readonly providerId = "google-gemini-enterprise";
 
   public async generateCandidate(_request: AICandidateRequest): Promise<AICandidateResponse> {
     throw new Error(
-      'Gemini provider is in status RESEARCH / NOT APPROVED FOR PHI. Use providers/ai-fake for synthetic local development.'
+      "Gemini provider is in status RESEARCH / NOT APPROVED FOR PHI. Use providers/ai-fake for synthetic local development.",
     );
   }
 }

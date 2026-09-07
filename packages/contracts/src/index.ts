@@ -1,9 +1,5 @@
-import { z } from 'zod';
-import {
-  AuthorityClass,
-  EpistemicStatus,
-  LifecycleState
-} from '@sovereign/domain';
+import { AuthorityClass, EpistemicStatus, LifecycleState } from "@sovereign/domain";
+import { z } from "zod";
 
 /**
  * AI Reasoning Provider Port (ADR-0001, ADR-0006)
@@ -12,8 +8,13 @@ import {
 export const AICandidateRequestSchema = z.object({
   tenantId: z.string().min(1),
   patientContextId: z.string().min(1),
-  taskType: z.enum(['EXTRACT_FACTS', 'DRAFT_DOCUMENTATION', 'CHECK_INTERACTION', 'FLAG_DISCREPANCY']),
-  redactedInputPayload: z.record(z.unknown())
+  taskType: z.enum([
+    "EXTRACT_FACTS",
+    "DRAFT_DOCUMENTATION",
+    "CHECK_INTERACTION",
+    "FLAG_DISCREPANCY",
+  ]),
+  redactedInputPayload: z.record(z.unknown()),
 });
 
 export type AICandidateRequest = z.infer<typeof AICandidateRequestSchema>;
@@ -26,7 +27,7 @@ export const AICandidateResponseSchema = z.object({
   epistemicStatus: z.nativeEnum(EpistemicStatus),
   proposedStateCandidate: z.record(z.unknown()),
   sourceEvidenceIds: z.array(z.string()),
-  disclaimer: z.literal('AI candidate carries no clinical authority; requires validation.')
+  disclaimer: z.literal("AI candidate carries no clinical authority; requires validation."),
 });
 
 export type AICandidateResponse = z.infer<typeof AICandidateResponseSchema>;
@@ -49,7 +50,10 @@ export interface WorkflowExecutionHandle {
 
 export interface WorkflowRuntime {
   readonly runtimeName: string;
-  dispatchActivity(nodeId: string, payload: Record<string, unknown>): Promise<WorkflowExecutionHandle>;
+  dispatchActivity(
+    nodeId: string,
+    payload: Record<string, unknown>,
+  ): Promise<WorkflowExecutionHandle>;
   pauseExecution(workflowId: string, reason: string): Promise<void>;
   cancelExecution(workflowId: string, reason: string): Promise<void>;
 }
@@ -65,7 +69,7 @@ export const MutationEnvelopeSchema = z.object({
   authorityClass: z.nativeEnum(AuthorityClass),
   evidenceHashes: z.array(z.string()),
   payload: z.record(z.unknown()),
-  timestamp: z.string().datetime()
+  timestamp: z.string().datetime(),
 });
 
 export type MutationEnvelope = z.infer<typeof MutationEnvelopeSchema>;

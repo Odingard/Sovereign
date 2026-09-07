@@ -6,7 +6,7 @@
  * Vendor formats terminate here and map to Sovereign domain models.
  */
 export interface FhirBundleTransport {
-  resourceType: 'Bundle';
+  resourceType: "Bundle";
   type: string;
   entry?: Array<{
     resource: Record<string, unknown>;
@@ -16,7 +16,7 @@ export interface FhirBundleTransport {
 export class FhirTransportAdapter {
   public parseTransportBundle(bundle: FhirBundleTransport): { rawCount: number } {
     return {
-      rawCount: bundle.entry ? bundle.entry.length : 0
+      rawCount: bundle.entry ? bundle.entry.length : 0,
     };
   }
 }
