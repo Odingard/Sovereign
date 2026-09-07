@@ -1,6 +1,6 @@
 # Gate Record — WO-001 (Sovereign Canonical Domain Model)
 
-## Status: RECOMMENDATION TO FOUNDER — GO FOR WO-001 MERGE INTO MAIN (SYNTHETIC ONLY)
+## Gate Status: CLOSED — GO (Synthetic/Local Development) | HOLD (Real PHI)
 ### G0-A: GO (Synthetic/Local Development) | G0-B: HOLD (Real PHI / PHI-Capable Environment)
 
 - **Work Order:** WO-001 — Sovereign Canonical Domain Model
@@ -68,7 +68,8 @@
 
 ---
 
-## 4. Recommendation for Founder
-
-- **Recommendation:** **`GO` for merging `wo/001-canonical-domain-model` into `main`**.
-- **Status of WO-002:** **HOLD**. WO-002 will NOT begin until explicit Founder authorization.
+## 4. Founder Gate Determination
+ 
+- **Founder Decision:** **`CLOSED — GO`** (Approved and merged into `main`).
+- **Status of WO-002:** Planning authorized on branch `wo/002-tenancy-identity-authority`. Implementation remains on **`HOLD`** until Founder review and approval of the WO-002 implementation plan.
+- **PHI Gate Posture:** **`HOLD — NO REAL PHI`** remains strictly in force across all environments.
