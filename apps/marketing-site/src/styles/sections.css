@@ -295,7 +295,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  color: var(--text-muted);
+  color: var(--text-inverse-muted);
   font-size: 0.85rem;
 }
 

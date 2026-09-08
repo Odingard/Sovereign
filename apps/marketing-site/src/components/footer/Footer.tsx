@@ -37,13 +37,15 @@ export function Footer() {
               Specialty clinical intelligence and execution platform. From clinical decision to
               completed care.
             </p>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "1rem" }}>
+            <p
+              style={{ color: "var(--text-inverse-muted)", fontSize: "0.85rem", marginTop: "1rem" }}
+            >
               Sovereign Health AI LLC
             </p>
           </div>
 
           <div>
-            <h4 className="footer-col-title">Specialty Products</h4>
+            <h2 className="footer-col-title">Specialty Products</h2>
             <ul className="footer-links">
               <li>
                 <Link href="/rheumatology" className="footer-link">
@@ -69,7 +71,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="footer-col-title">For Practices</h4>
+            <h2 className="footer-col-title">For Practices</h2>
             <ul className="footer-links">
               <li>
                 <Link href="/security" className="footer-link">
@@ -95,7 +97,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="footer-col-title">Company & Legal</h4>
+            <h2 className="footer-col-title">Company & Legal</h2>
             <ul className="footer-links">
               <li>
                 <Link href="/about" className="footer-link">

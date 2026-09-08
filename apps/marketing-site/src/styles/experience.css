@@ -6,7 +6,7 @@
   --mist: #eaf5f8;
   --line: rgba(21, 73, 101, 0.14);
   --cyan: #42d8e8;
-  --cyan-deep: #087f9d;
+  --cyan-deep: #05627a;
   --blue: #3176ff;
   --night: #051526;
   --night-2: #0a2138;
@@ -407,7 +407,7 @@ p {
   max-width: 1080px;
 }
 .product-truth-label {
-  color: #5e7888;
+  color: #405e6e;
   display: flex;
   font-size: .62rem;
   font-weight: 800;
@@ -473,7 +473,7 @@ p {
 }
 .command-header small,
 .panel-kicker {
-  color: #6b8492;
+  color: #405e6e;
   font-size: .58rem;
   font-weight: 800;
   letter-spacing: .11em;
@@ -516,7 +516,7 @@ p {
   padding: .62rem 0;
 }
 .state-row span {
-  color: #647d8c;
+  color: #465f6d;
 }
 .state-row strong {
   color: #183d50;
@@ -539,7 +539,7 @@ p {
   background: linear-gradient(90deg, #36ccd9, #2e88e8);
 }
 .path-labels {
-  color: #6a8290;
+  color: #405e6e;
   display: flex;
   font-size: .56rem;
   justify-content: space-between;
@@ -566,7 +566,7 @@ p {
   flex-direction: column;
 }
 .activity-row small {
-  color: #718794;
+  color: #465f6d;
   font-size: .53rem;
   text-transform: uppercase;
 }
@@ -642,7 +642,7 @@ p {
   position: relative;
 }
 .problem-chain__item span {
-  color: #6190a2;
+  color: #3d6575;
   display: block;
   font-size: .58rem;
   font-weight: 800;
@@ -859,7 +859,7 @@ p {
   padding: 1.45rem;
 }
 .module-card span {
-  color: #69a0b0;
+  color: #315d6d;
   font-family: monospace;
   font-size: .64rem;
 }
@@ -928,7 +928,7 @@ p {
   padding: 1.3rem 1rem;
 }
 .thesis-card span {
-  color: #69a0b0;
+  color: #315d6d;
   font-family: monospace;
 }
 .thesis-card h3 {
