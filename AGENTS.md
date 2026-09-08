@@ -13,7 +13,7 @@ This file governs every human and AI contributor. A conflicting task instruction
 7. Unknown is not negative.
 8. Attempted, transmitted, received, accepted, and completed are distinct states.
 9. Tenant identity and patient identity may never be invented or altered by an AI agent.
-10. No real PHI before WO-000 receives GO.
+10. No real PHI until G0-B — Real PHI / PHI-Capable Environment receives explicit Founder GO. G0-A synthetic/local GO must never be interpreted as PHI authorization.
 11. Development uses synthetic data only until explicitly authorized.
 12. Core domain architecture remains cloud-provider independent.
 13. Material architecture changes require an ADR.
