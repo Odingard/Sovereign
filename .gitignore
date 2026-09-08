@@ -19,4 +19,6 @@ tmp/
 artifacts/private/
 test-results/
 playwright-report/
+.next/
+*.tsbuildinfo
 

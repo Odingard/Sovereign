@@ -1,0 +1,345 @@
+/* ==========================================================================
+   Homepage Sections Styles (Problem, Platform, Authority, Pillars, Audience)
+   ========================================================================== */
+
+/* Section Headings */
+.section-header {
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto 3.5rem auto;
+}
+
+.section-tag {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal-primary);
+  margin-bottom: 0.75rem;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--navy-primary);
+  margin-bottom: 1rem;
+}
+
+.section-desc {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 1. Problem Section */
+.problem-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.problem-card-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  background-color: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.problem-flow-banner {
+  background-color: var(--navy-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  margin-top: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.flow-step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.flow-step-arrow {
+  color: var(--text-muted);
+  font-weight: bold;
+}
+
+/* 2. Platform Section (Understand, Verify, Execute, Monitor) */
+.platform-loop-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.platform-loop-card {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 1.75rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  transition: all 0.2s ease;
+  border-top: 4px solid var(--teal-primary);
+}
+
+.platform-loop-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+.loop-step-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--teal-hover);
+  background: var(--teal-subtle);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.loop-step-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--navy-primary);
+  margin-bottom: 0.75rem;
+}
+
+.loop-step-desc {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 3. Clinical Authority Section */
+.authority-callout {
+  background: radial-gradient(circle at 50% 50%, #f0fdfa 0%, #ffffff 80%);
+  border: 2px solid var(--teal-border);
+  border-radius: var(--radius-xl);
+  padding: 3.5rem 2.5rem;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+
+.authority-quote {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--navy-primary);
+  line-height: 1.25;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.025em;
+}
+
+.authority-body {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  max-width: 760px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* 4. Product Pillars */
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.25rem;
+}
+
+.pillar-card {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.25rem;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.pillar-card:hover {
+  border-color: var(--blue-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.pillar-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--navy-primary);
+  margin-bottom: 0.5rem;
+}
+
+.pillar-tagline {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--teal-hover);
+  margin-bottom: 0.75rem;
+}
+
+.pillar-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* 5. Audience Section */
+.audience-card {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+}
+
+.audience-role {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--navy-primary);
+  margin-bottom: 0.5rem;
+}
+
+.audience-benefit {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 6. Design Partner / Early Access CTA Banner */
+.cta-banner {
+  background: linear-gradient(135deg, var(--navy-primary) 0%, #1e293b 100%);
+  border-radius: var(--radius-xl);
+  padding: 4rem 3rem;
+  text-align: center;
+  color: #ffffff;
+  box-shadow: var(--shadow-xl);
+}
+
+.cta-banner-title {
+  color: #ffffff;
+  font-size: 2.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.cta-banner-desc {
+  color: var(--text-inverse-muted);
+  font-size: 1.2rem;
+  max-width: 680px;
+  margin: 0 auto 2.5rem auto;
+  line-height: 1.65;
+}
+
+/* 7. Footer */
+.site-footer {
+  background-color: var(--bg-surface-dark);
+  color: #ffffff;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 4.5rem;
+  padding-bottom: 3rem;
+  font-size: 0.9rem;
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 3.5rem;
+}
+
+.footer-col-title {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 1.25rem;
+}
+
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-link {
+  color: var(--text-inverse-muted);
+  transition: color 0.15s ease;
+}
+
+.footer-link:hover {
+  color: #ffffff;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.phi-warning-footer {
+  background-color: rgba(254, 243, 199, 0.08);
+  border: 1px solid rgba(253, 230, 138, 0.2);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  color: #fef08a;
+  font-size: 0.85rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .platform-loop-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pillars-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer-top {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .platform-loop-grid,
+  .pillars-grid,
+  .footer-top {
+    grid-template-columns: 1fr;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .authority-quote {
+    font-size: 1.5rem;
+  }
+
+  .cta-banner {
+    padding: 2.5rem 1.5rem;
+  }
+}
