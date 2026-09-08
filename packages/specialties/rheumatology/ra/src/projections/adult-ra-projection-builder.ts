@@ -20,7 +20,7 @@ export class AdultRaProjectionBuilder {
     const assertions = aggregate.getAllAssertions();
 
     // Derive serology phenotype safely
-    const derivedSerology = this.deriveSerologyPhenotype(assertions);
+    const derivedSerology = AdultRaProjectionBuilder.deriveSerologyPhenotype(assertions);
 
     return AdultRaClinicalProfile.create({
       stateId: aggregate.props.stateId,

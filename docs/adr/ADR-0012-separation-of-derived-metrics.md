@@ -28,9 +28,13 @@ Treating a derived score as an unexplainable primary observation or silently imp
    Mathematical calculation is decoupled from categorical classification. Assigning clinical meaning (e.g. "Remission" vs "Low Activity") is governed by the RA Clinical Decision Register and requires human specialist approval (`REQUIRES_CLINICAL_DECISION`).
 5. **Traceability:**
    Every derived result stores the exact array of `sourceComponentAssertionIds` from which it was computed.
+6. **Structural Representation vs. Clinical Execution (Permanent Doctrine):**
+   *Representing a clinical calculation is structural. Executing a clinical calculation is clinical semantics.*
+   A calculation definition may not execute until its approved version and human clinical sign-off are verified.
+   Presence of complete component observations alone cannot activate formula execution. Until the associated calculation definition receives `APPROVED WITH VERSION` and a verified human reviewer sign-off reference in the RA Clinical Decision Register, complete components produce an explicit `CALCULATION_NOT_ACTIVATED` result.
 
 ## Consequences
 - **Positive:** Complete explainability and auditability for all disease-activity metrics.
 - **Positive:** Eliminates dangerous silent data imputation.
-- **Positive:** Prevents software from asserting clinical interpretations without verified rheumatologist approval.
-- **Negative:** Calculation pipelines must check component availability and propagate explicit non-calculable states.
+- **Positive:** Strictly prevents software or AI agents from executing unapproved clinical formulas or asserting clinical interpretations without verified rheumatologist approval.
+- **Negative:** Calculation pipelines must check both component availability (yielding `NOT_CALCULABLE` if incomplete) and clinical approval status (yielding `CALCULATION_NOT_ACTIVATED` if pending).

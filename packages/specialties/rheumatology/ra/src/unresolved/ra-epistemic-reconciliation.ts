@@ -4,8 +4,8 @@
  * Invariant: AI and automated services are forbidden from silently resolving clinical contradictions.
  */
 
-import { EpistemicStatus, type ClinicalAssertion } from "@sovereign/domain";
-import { RaUnresolvedIssueKind, type RaUnresolvedIssue } from "./ra-unresolved-issue.js";
+import { type ClinicalAssertion, EpistemicStatus } from "@sovereign/domain";
+import { type RaUnresolvedIssue, RaUnresolvedIssueKind } from "./ra-unresolved-issue.js";
 
 export function detectAssertionConflict(
   assertionA: ClinicalAssertion,

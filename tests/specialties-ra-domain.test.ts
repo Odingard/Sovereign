@@ -6,11 +6,10 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
 import {
-  AssertionCategory,
   AUTHORITATIVE_OBJECT_TYPES,
-  ClinicalAssertion,
+  AssertionCategory,
+  type ClinicalAssertion,
   ClinicalEvidenceAggregate,
   ClinicalIntentAggregate,
   ClinicalIntentStage,
@@ -18,34 +17,24 @@ import {
   DataProvenanceOrigin,
   DataSensitivityClassification,
   EpistemicStatus,
+  type EvidenceId,
   ExtractionLineage,
   InvariantViolationError,
   TemporalPrecision,
-  type EvidenceId,
   type TenantPatientContext,
 } from "@sovereign/domain";
 import {
   AdultRaClinicalProfile,
   AdultRaProjectionBuilder,
-  assertRuleIsApprovedWithVersion,
-  assertTherapyDiscontinuationReasonHasEvidence,
-  assertTherapyExposureHasEvidence,
   ClinicalDecisionReviewStatus,
-  deriveStructuralCdai,
   DerivedSerologyPhenotype,
   ExaminerKind,
   HoldReasonCategory,
   ImagingModality,
-  isObservationConfirmedAbsent,
-  isObservationConfirmedPresent,
-  isObservationUncertainOrUnassessed,
-  isTargetedOrBiologicDmard,
-  isTherapyCurrentlyAdministered,
-  isTherapyInterruptedOrHeld,
   MONITORING_POLICY_BOUNDARY,
   ObservationPresenceState,
   RaArticularManifestationKind,
-  RaClinicalDecisionEntry,
+  type RaClinicalDecisionEntry,
   RaDiagnosticCertainty,
   RaDiscontinuationReasonCategory,
   RaExtraArticularManifestationKind,
@@ -56,9 +45,21 @@ import {
   RegimenClassification,
   ReportingSourceProvenance,
   SOVEREIGN_RA_NAMESPACES,
+  STRUCTURAL_CDAI_CALCULATION_DEFINITION,
   StandardizedMeasureType,
   TherapyLifecycleStatus,
+  assertRuleIsApprovedWithVersion,
+  assertTherapyDiscontinuationReasonHasEvidence,
+  assertTherapyExposureHasEvidence,
+  deriveStructuralCdai,
+  isObservationConfirmedAbsent,
+  isObservationConfirmedPresent,
+  isObservationUncertainOrUnassessed,
+  isTargetedOrBiologicDmard,
+  isTherapyCurrentlyAdministered,
+  isTherapyInterruptedOrHeld,
 } from "@sovereign/specialty-rheumatology-ra";
+import { describe, expect, it } from "vitest";
 
 const SYNTHETIC_CONTEXT: TenantPatientContext = {
   tenantId: "TEN-SYN-RHEUM-01" as any,
@@ -192,7 +193,7 @@ describe("WO-003A: RA Specialty Structural Architecture & Invariant Tests", () =
 
   it("Arch-RA-07: proves clinical governance decision register cannot be executed if unapproved", () => {
     const pendingRule: RaClinicalDecisionEntry = {
-      decisionId: "CDR-RA-001",
+      decisionId: "CDR-RA-001B",
       clinicalGovernanceQuestion: "What are approved CDAI cutoffs?",
       clinicalRiskIfIncorrect: "Therapy misclassification",
       candidateOptions: "<= 2.8 Remission",
@@ -497,7 +498,7 @@ describe("WO-003A: RA Specialty Structural Architecture & Invariant Tests", () =
     }
   });
 
-  it("Inv-RA-15: complete components calculate structural score without activating unapproved interpretations", () => {
+  it("Inv-RA-15A: complete components with unapproved formula yields CALCULATION_NOT_ACTIVATED (ADR-0012)", () => {
     const scoreResult = deriveStructuralCdai({
       tjc28AssertionId: "ASSERT-TJC-01",
       tjc28Value: 2,
@@ -509,14 +510,146 @@ describe("WO-003A: RA Specialty Structural Architecture & Invariant Tests", () =
       phgaValue: 1.0,
     });
 
-    expect(scoreResult.status).toBe("CALCULATED");
-    if (scoreResult.status === "CALCULATED") {
-      expect(scoreResult.numericValue).toBe(5.0);
+    expect(scoreResult.status).toBe("CALCULATION_NOT_ACTIVATED");
+    if (scoreResult.status === "CALCULATION_NOT_ACTIVATED") {
+      expect(scoreResult.reason).toBe("REQUIRES_CLINICAL_APPROVAL");
       expect(scoreResult.calculationDefinitionId).toBe("DEF-CDAI-ACR-2005");
-      expect(scoreResult.sourceComponentAssertionIds).toHaveLength(4);
-      // Invariant: Unapproved clinical interpretation is withheld
-      expect(scoreResult.approvedInterpretation).toBeUndefined();
+      expect(scoreResult.clinicalDecisionId).toBe("CDR-RA-001A");
+      expect(scoreResult.reviewStatus).toBe(
+        ClinicalDecisionReviewStatus.PENDING_RHEUMATOLOGY_REVIEW,
+      );
+      expect(scoreResult.availableComponentAssertionIds).toHaveLength(4);
+      expect(scoreResult.candidateFormulaMetadata.formulaName).toBe(
+        "CDAI (TJC28 + SJC28 + PtGA + PhGA)",
+      );
+      expect(scoreResult.candidateFormulaMetadata.candidateVersion).toBe("1.0.0-candidate");
+      expect(scoreResult.candidateFormulaMetadata.componentRequirements).toHaveLength(4);
+      expect(scoreResult.explanation).toContain(
+        "Representing a clinical calculation is structural. Executing a clinical calculation is clinical semantics.",
+      );
+      // Permanent Invariant: unapproved formula NEVER produces a numeric result
+      expect((scoreResult as any).numericValue).toBeUndefined();
     }
+  });
+
+  it("Inv-RA-15B: approved formula definition with human clinical sign-off is required before CALCULATED can occur", () => {
+    // 1. Structural calculation definition has reviewStatus PENDING_RHEUMATOLOGY_REVIEW
+    expect(STRUCTURAL_CDAI_CALCULATION_DEFINITION.reviewStatus).toBe(
+      ClinicalDecisionReviewStatus.PENDING_RHEUMATOLOGY_REVIEW,
+    );
+    expect(STRUCTURAL_CDAI_CALCULATION_DEFINITION.approvedVersion).toBeUndefined();
+    expect(STRUCTURAL_CDAI_CALCULATION_DEFINITION.humanReviewerSignOffReference).toBeUndefined();
+
+    // 2. Complete components alone do NOT activate calculation
+    const completeInputs = {
+      tjc28AssertionId: "ASSERT-TJC-01",
+      tjc28Value: 2,
+      sjc28AssertionId: "ASSERT-SJC-01",
+      sjc28Value: 1,
+      ptgaAssertionId: "ASSERT-PTGA-01",
+      ptgaValue: 1.0,
+      phgaAssertionId: "ASSERT-PHGA-01",
+      phgaValue: 1.0,
+    };
+
+    const pendingResult = deriveStructuralCdai(
+      completeInputs,
+      STRUCTURAL_CDAI_CALCULATION_DEFINITION,
+    );
+    expect(pendingResult.status).not.toBe("CALCULATED");
+    expect(pendingResult.status).toBe("CALCULATION_NOT_ACTIVATED");
+
+    // 3. Rejected definition cannot produce CALCULATED
+    const rejectedDefinition = {
+      ...STRUCTURAL_CDAI_CALCULATION_DEFINITION,
+      reviewStatus: ClinicalDecisionReviewStatus.REJECTED,
+    };
+    const rejectedResult = deriveStructuralCdai(completeInputs, rejectedDefinition);
+    expect(rejectedResult.status).toBe("CALCULATION_NOT_ACTIVATED");
+
+    // 4. Missing approved version cannot produce CALCULATED
+    const missingVersionDefinition = {
+      ...STRUCTURAL_CDAI_CALCULATION_DEFINITION,
+      reviewStatus: ClinicalDecisionReviewStatus.APPROVED_WITH_VERSION,
+      approvedVersion: undefined,
+      humanReviewerSignOffReference: "SIGNOFF-REF-01",
+    };
+    const missingVersionResult = deriveStructuralCdai(completeInputs, missingVersionDefinition);
+    expect(missingVersionResult.status).toBe("CALCULATION_NOT_ACTIVATED");
+
+    // 5. Missing human sign-off reference cannot produce CALCULATED
+    const missingSignOffDefinition = {
+      ...STRUCTURAL_CDAI_CALCULATION_DEFINITION,
+      reviewStatus: ClinicalDecisionReviewStatus.APPROVED_WITH_VERSION,
+      approvedVersion: "1.0.0",
+      humanReviewerSignOffReference: undefined,
+    };
+    const missingSignOffResult = deriveStructuralCdai(completeInputs, missingSignOffDefinition);
+    expect(missingSignOffResult.status).toBe("CALCULATION_NOT_ACTIVATED");
+  });
+
+  it("Inv-RA-15C: unapproved categorical disease-activity interpretation remains unavailable", () => {
+    // Formula approval (CDR-RA-001A) and categorical interpretation threshold approval (CDR-RA-001B)
+    // are distinct governance decisions in the RA Clinical Decision Register.
+    const completeInputs = {
+      tjc28AssertionId: "ASSERT-TJC-01",
+      tjc28Value: 2,
+      sjc28AssertionId: "ASSERT-SJC-01",
+      sjc28Value: 1,
+      ptgaAssertionId: "ASSERT-PTGA-01",
+      ptgaValue: 1.0,
+      phgaAssertionId: "ASSERT-PHGA-01",
+      phgaValue: 1.0,
+    };
+
+    const scoreResult = deriveStructuralCdai(completeInputs);
+    // Categorical interpretation (e.g. "Remission", "Low", "Moderate", "High") is strictly unavailable
+    expect((scoreResult as any).approvedInterpretation).toBeUndefined();
+  });
+
+  it("Inv-RA-15D: AI cannot mark a calculation definition approved or sign off on clinical rules", () => {
+    const aiAttemptDefinition = {
+      ...STRUCTURAL_CDAI_CALCULATION_DEFINITION,
+      reviewStatus: ClinicalDecisionReviewStatus.APPROVED_WITH_VERSION,
+      approvedVersion: "1.0.0",
+      humanReviewerSignOffReference: "AI-AGENT-GEMINI", // AI self-sign-off attempt
+    };
+
+    const completeInputs = {
+      tjc28AssertionId: "ASSERT-TJC-01",
+      tjc28Value: 2,
+      sjc28AssertionId: "ASSERT-SJC-01",
+      sjc28Value: 1,
+      ptgaAssertionId: "ASSERT-PTGA-01",
+      ptgaValue: 1.0,
+      phgaAssertionId: "ASSERT-PHGA-01",
+      phgaValue: 1.0,
+    };
+
+    // deriveStructuralCdai rejects AI sign-off and falls back to CALCULATION_NOT_ACTIVATED
+    const result = deriveStructuralCdai(completeInputs, aiAttemptDefinition);
+    expect(result.status).toBe("CALCULATION_NOT_ACTIVATED");
+
+    // Governance assertRuleIsApprovedWithVersion strictly throws InvariantViolationError on AI approval
+    const aiDecisionEntry: RaClinicalDecisionEntry = {
+      decisionId: "CDR-RA-001A",
+      clinicalGovernanceQuestion: "What is approved CDAI formula?",
+      clinicalRiskIfIncorrect: "Therapy misclassification",
+      candidateOptions: "TJC28 + SJC28 + PtGA + PhGA",
+      authoritativeSourceReferences: "Smolen 2005",
+      responsibleReviewer: "AI Assistant",
+      reviewStatus: ClinicalDecisionReviewStatus.APPROVED_WITH_VERSION,
+      approvedVersion: "1.0.0",
+      approvalReference: "AI-MODEL-SIGN-OFF",
+      productVersionAffected: "V0.1",
+    };
+
+    expect(() => assertRuleIsApprovedWithVersion(aiDecisionEntry)).toThrowError(
+      InvariantViolationError,
+    );
+    expect(() => assertRuleIsApprovedWithVersion(aiDecisionEntry)).toThrowError(
+      /AI agent cannot approve clinical rule/,
+    );
   });
 
   // --------------------------------------------------------------------------

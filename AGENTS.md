@@ -23,6 +23,7 @@ This file governs every human and AI contributor. A conflicting task instruction
 17. **Identity is not authority. A role is not an authority grant. Tenant membership is not patient authorization. Authentication success is not permission to act.**
 18. **The requester does not define the security requirements for its own request.**
 19. AI may possess an authenticated technical identity for auditing and tool invocation but may never become a source of clinical authority.
+20. **Representing a clinical calculation is structural. Executing a clinical calculation is clinical semantics.** A calculation definition may not execute until its approved version and human clinical sign-off are verified.
 
 ## Mandatory architecture rule
 

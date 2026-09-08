@@ -8,6 +8,8 @@
  */
 
 import type { EvidenceId, TherapyAccessCaseId } from "@sovereign/domain";
+import type { RaCurrentTreatmentRegimen } from "../current-treatment/ra-current-treatment-regimen.js";
+import type { RaTreatmentInterruptionRecord } from "../current-treatment/ra-treatment-interruption.js";
 import type { RaJointCountObservation } from "../disease-activity/ra-joint-counts.js";
 import type { RaStandardizedMeasureRecord } from "../disease-activity/ra-structural-measures.js";
 import type { RaFunctionalStatusAssertion } from "../functional/ra-functional-status.js";
@@ -21,8 +23,6 @@ import type {
 } from "../therapy-history/ra-therapy-discontinuation.js";
 import type { RaTherapyExposure } from "../therapy-history/ra-therapy-exposure.js";
 import type { RaTherapyOutcomeAssertion } from "../therapy-history/ra-therapy-outcome.js";
-import type { RaTreatmentInterruptionRecord } from "../current-treatment/ra-treatment-interruption.js";
-import type { RaCurrentTreatmentRegimen } from "../current-treatment/ra-current-treatment-regimen.js";
 import type { RaUnresolvedIssue } from "../unresolved/ra-unresolved-issue.js";
 
 export enum DerivedSerologyPhenotype {

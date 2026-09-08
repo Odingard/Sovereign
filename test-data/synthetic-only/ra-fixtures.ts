@@ -65,7 +65,7 @@ export const SYNTHETIC_RA_EVALUATION_CORPUS: ReadonlyArray<SyntheticRaCaseFixtur
         phga: 1.0,
         expectedCalculable: true,
         scoreExplanation:
-          "CDAI numeric score = 5.0; categorical interpretation withheld pending clinical approval.",
+          "All 4 components present; CDAI formula execution not activated (CALCULATION_NOT_ACTIVATED) pending clinical approval. Categorical interpretation withheld.",
       },
     },
   },
@@ -107,7 +107,7 @@ export const SYNTHETIC_RA_EVALUATION_CORPUS: ReadonlyArray<SyntheticRaCaseFixtur
         phga: 7.0,
         expectedCalculable: true,
         scoreExplanation:
-          "CDAI numeric score = 35.5; categorical interpretation withheld pending clinical approval.",
+          "All 4 components present; CDAI formula execution not activated (CALCULATION_NOT_ACTIVATED) pending clinical approval. Categorical interpretation withheld.",
       },
     },
   },

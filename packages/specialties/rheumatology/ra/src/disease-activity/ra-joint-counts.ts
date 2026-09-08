@@ -4,7 +4,7 @@
  */
 
 import type { ClinicalTime, EvidenceId } from "@sovereign/domain";
-import { ObservationPresenceState } from "../concepts/ra-observation-presence.js";
+import type { ObservationPresenceState } from "../concepts/ra-observation-presence.js";
 
 export interface JointHomunculus28 {
   // Shoulders, Elbows, Wrists (left/right)
