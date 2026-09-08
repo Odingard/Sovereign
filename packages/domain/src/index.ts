@@ -44,3 +44,9 @@ export * from "./therapy-access/therapy-access-aggregate.js";
 // Domain Events
 export * from "./events/domain-event.js";
 export * from "./events/aggregate-events.js";
+
+// Identity & Tenancy Model (WO-002)
+export * from "./identity/index.js";
+
+// Authority & Policy Model (WO-002)
+export * from "./authority/index.js";
