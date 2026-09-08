@@ -1,195 +1,127 @@
-/**
- * @file Sovereign Rheumatology Specialty Page (/rheumatology)
- * @description In-depth product overview for independent rheumatologists, practice administrators,
- * and biologic access teams.
- */
-
-import { EarlyAccessBanner } from "@/components/cta/EarlyAccessBanner";
+import { ChapterCta, PageHero } from "@/components/story/PageHero";
+import { WorkflowPath } from "@/components/story/WorkflowPath";
+import { ClinicalIntelligenceCore } from "@/components/visuals/ClinicalIntelligenceCore";
 import { constructMetadata } from "@/lib/seo/site-metadata";
-import Link from "next/link";
 
 export const metadata = constructMetadata({
-  title: "Sovereign Rheumatology | Specialty Clinical Intelligence & Execution",
+  title: "Sovereign Rheumatology | From Decision to Completed Care",
   description:
-    "Built specifically for independent and physician-led rheumatology practices. Longitudinal DMARD trial tracking, evidence-linked clinical state, and advanced therapy coordination.",
+    "Sovereign Rheumatology is being built to connect complex longitudinal disease, therapy history, evidence, clinical intent, and advanced-therapy access workflows.",
   path: "/rheumatology",
 });
 
-export default function RheumatologyPage() {
-  const challenges = [
-    {
-      title: "Step-Therapy History Reconstruction",
-      problem:
-        "Payers demand exact historical dates, dosages, and discontinuation reasons for conventional DMARDs before approving targeted therapies.",
-      solution:
-        "Sovereign reconstructs a five-part decoupled therapy model (exposures, trials, adverse events, hold events, and discontinuation reasons) anchored to primary chart evidence.",
-    },
-    {
-      title: "Prerequisite Safety Monitoring",
-      problem:
-        "Biologic starts stall when screening tests (QuantiFERON TB, hepatitis serology, liver enzymes) are missing or outdated.",
-      solution:
-        "Factual monitoring tracking with clear visibility into lab freshness, preventing last-minute prior auth rejections or day-of-infusion cancellations.",
-    },
-    {
-      title: "Disease Activity Derivation Provenance",
-      problem:
-        "Composite scores (CDAI, SDAI, DAS28) are frequently reported without underlying joint counts or unassessed components, risking clinical misclassification.",
-      solution:
-        "Strict four-stage derivation architecture separating joint observations, mathematical calculations, and clinician-approved interpretations. Missing components yield explicit NOT_CALCULABLE states rather than silent default values.",
-    },
-    {
-      title: "Specialty Pharmacy & Infusion Handoffs",
-      problem:
-        "After authorization, orders bounce between specialty pharmacies, foundation assistance programs, and infusion coordinators with zero centralized tracking.",
-      solution:
-        "Durable care execution graphs that track state from clinical order to confirmed dispensing, chair scheduling, and patient administration.",
-    },
-  ];
+const history = [
+  [
+    "Years prior",
+    "Conventional therapies",
+    "Trials, holds, responses, and reasons remain distinct",
+  ],
+  ["Prior line", "Advanced therapy", "Evidence and response connected"],
+  [
+    "Current state",
+    "Disease and treatment context",
+    "Known, unknown, and conflicting facts remain visible",
+  ],
+  ["Clinician decision", "Clinical Intent", "Decided direction represented distinctly"],
+  ["Next", "Access & continuity", "Authorized work monitored to confirmation"],
+];
 
+export default function RheumatologyPage() {
   return (
     <>
-      <section className="hero-section" style={{ paddingBottom: "4rem" }}>
-        <div className="container">
-          <div className="hero-content">
-            <span className="badge badge-teal" style={{ marginBottom: "1.25rem" }}>
-              Specialty Care Product
-            </span>
-            <h1 className="hero-headline" style={{ fontSize: "3rem" }}>
-              Sovereign Rheumatology
-            </h1>
-            <p className="hero-subheadline">
-              The first specialty product from Sovereign, designed specifically for independent and
-              physician-led rheumatology practices managing complex autoimmune diseases, multi-line
-              biologic therapies, and intensive administrative hurdles.
+      <PageHero
+        eyebrow="Sovereign Rheumatology"
+        title="Built first for rheumatology."
+        body="Complex longitudinal disease. Complex therapy history. Complex access workflows. One connected clinical picture."
+        primary={{
+          href: "/early-access?program=rheumatology",
+          label: "Join Rheumatology Early Access",
+        }}
+        secondary={{ href: "/product", label: "Explore the Product" }}
+        visual={<ClinicalIntelligenceCore mode="rheumatology" />}
+      />
+      <section className="story-section">
+        <div className="container split-story">
+          <div className="split-story__copy">
+            <span className="eyebrow">Story 01 · Longitudinal understanding</span>
+            <h2>Model the patient, not the document.</h2>
+            <p>
+              Rheumatology unfolds across years of visits, therapies, symptoms, monitoring, outside
+              records, and interruptions. Sovereign is being built to create a usable longitudinal
+              picture while retaining evidence and uncertainty.
             </p>
-            <div
-              style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}
-            >
-              <Link href="/early-access?program=rheumatology" className="btn btn-primary btn-lg">
-                Join Rheumatology Design Partner Program
-              </Link>
-              <Link href="/#workflow" className="btn btn-secondary btn-lg">
-                View Therapy Access Flow
-              </Link>
+          </div>
+          <div className="history-visual">
+            <div className="history-visual__top">
+              <span>Treatment history</span>
+              <span>Illustrative · synthetic data</span>
+            </div>
+            <div className="history-line">
+              {history.map(([date, title, state]) => (
+                <div className="history-item" key={date}>
+                  <small>{date}</small>
+                  <strong>{title}</strong>
+                  <span>{state}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
-
-      <section className="section">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-tag">Clinical &amp; Operational Challenges</span>
-            <h2 className="section-title">Why Rheumatology Requires Dedicated Architecture</h2>
-            <p className="section-desc">
-              Generic EHR templates and horizontal AI chatbots fail in rheumatology because they
-              treat therapy decisions as text rather than multi-year clinical commitments.
+      <section className="story-section story-section--mist">
+        <div className="container split-story split-story--reverse">
+          <div className="split-story__copy">
+            <span className="eyebrow">Story 02 · The clinical decision</span>
+            <h2>Clinical Intent is not a status shortcut.</h2>
+            <p>
+              What was discussed, what was considered, what the clinician decided, what was
+              authorized, and what the patient ultimately received must not collapse into a single
+              field.
             </p>
-          </div>
-
-          <div className="grid-2">
-            {challenges.map((c) => (
-              <div key={c.title} className="card card-highlight">
-                <h3
-                  style={{
-                    fontSize: "1.3rem",
-                    color: "var(--navy-primary)",
-                    marginBottom: "0.75rem",
-                  }}
-                >
-                  {c.title}
-                </h3>
-                <div style={{ marginBottom: "1rem" }}>
-                  <span
-                    style={{
-                      fontSize: "0.8rem",
-                      fontWeight: "700",
-                      textTransform: "uppercase",
-                      color: "#b91c1c",
-                    }}
-                  >
-                    Practice Pain Point:
-                  </span>
-                  <p
-                    style={{
-                      fontSize: "0.95rem",
-                      color: "var(--text-secondary)",
-                      marginTop: "0.25rem",
-                    }}
-                  >
-                    {c.problem}
-                  </p>
-                </div>
+            <div className="story-points">
+              <div className="story-point">
+                <span>01</span>
                 <div>
-                  <span
-                    style={{
-                      fontSize: "0.8rem",
-                      fontWeight: "700",
-                      textTransform: "uppercase",
-                      color: "var(--teal-hover)",
-                    }}
-                  >
-                    Sovereign Execution:
-                  </span>
-                  <p
-                    style={{
-                      fontSize: "0.95rem",
-                      color: "var(--text-primary)",
-                      fontWeight: "500",
-                      marginTop: "0.25rem",
-                    }}
-                  >
-                    {c.solution}
+                  <strong>considered != decided</strong>
+                  <p>Possibilities remain distinct from an explicit clinical decision.</p>
+                </div>
+              </div>
+              <div className="story-point">
+                <span>02</span>
+                <div>
+                  <strong>decided != treatment received</strong>
+                  <p>
+                    Clinical Intent remains distinct from access progress and confirmed
+                    administration.
                   </p>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
+          <ClinicalIntelligenceCore mode="rheumatology" />
         </div>
       </section>
-
-      {/* Disease State Scope Note */}
-      <section className="section section-subtle">
-        <div className="container container-narrow" style={{ textAlign: "center" }}>
-          <span className="badge badge-blue" style={{ marginBottom: "1rem" }}>
-            Launch Indication Scope
-          </span>
-          <h2 style={{ fontSize: "2rem", color: "var(--navy-primary)", marginBottom: "1rem" }}>
-            Adult Rheumatoid Arthritis (RA) First
-          </h2>
-          <p
-            style={{
-              fontSize: "1.1rem",
-              color: "var(--text-secondary)",
-              lineHeight: "1.7",
-              marginBottom: "2rem",
-            }}
-          >
-            Sovereign is focusing its initial specialty depth on Adult Rheumatoid Arthritis—the most
-            common autoimmune inflammatory arthritis with the highest administrative burden for
-            targeted therapy access—before expanding to Psoriatic Arthritis, Ankylosing Spondylitis,
-            and Lupus.
-          </p>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "1.5rem",
-              flexWrap: "wrap",
-              fontSize: "0.95rem",
-              fontWeight: "600",
-              color: "var(--navy-primary)",
-            }}
-          >
-            <span>&bull; 28-Joint Homunculus Modeling</span>
-            <span>&bull; Serology Phenotype History</span>
-            <span>&bull; Strict Epistemic Unknown-Safety</span>
+      <section className="story-section story-section--dark">
+        <div className="container">
+          <div className="story-section__header">
+            <span className="eyebrow">Story 03 · Advanced therapy access & continuity</span>
+            <h2>Turn a therapy decision into a completed care pathway.</h2>
+            <p>
+              Sovereign Rheumatology is being designed to coordinate the work between a clinical
+              decision and confirmed treatment initiation—while preserving human authority at every
+              required point.
+            </p>
           </div>
+          <WorkflowPath dark />
         </div>
       </section>
-
-      <EarlyAccessBanner />
+      <ChapterCta
+        eyebrow="Rheumatology early access"
+        title="Help shape Sovereign Rheumatology."
+        body="We are seeking independent and physician-led rheumatology groups managing advanced therapies and complex access workflows."
+        href="/early-access?program=rheumatology"
+        label="Join Early Access"
+      />
     </>
   );
 }

@@ -16,6 +16,16 @@ export interface UtmParameters {
 }
 
 const STORAGE_KEY = "sovereign_utm_attribution";
+const UTM_FIELDS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "referrer",
+  "landing_page",
+  "captured_at",
+] as const;
 
 /**
  * Extracts UTM parameters from a URL query string or URLSearchParams.
@@ -33,6 +43,21 @@ export function extractUtmParameters(search: string | URLSearchParams): UtmParam
   }
 
   return utm as UtmParameters;
+}
+
+/** Runtime allowlist for attribution submitted by untrusted API clients. */
+export function sanitizeUtmParameters(value: unknown): UtmParameters | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "object" || Array.isArray(value)) return undefined;
+  const input = value as Record<string, unknown>;
+  const clean: Record<string, string> = {};
+  for (const field of UTM_FIELDS) {
+    const candidate = input[field];
+    if (typeof candidate === "string" && candidate.trim()) {
+      clean[field] = candidate.trim().slice(0, field === "referrer" ? 500 : 120);
+    }
+  }
+  return Object.keys(clean).length ? (clean as UtmParameters) : undefined;
 }
 
 interface BrowserEnvironment {

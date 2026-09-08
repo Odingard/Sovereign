@@ -1,0 +1,18 @@
+import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./e2e",
+  outputDir: "../../test-results/marketing-browser",
+  fullyParallel: false,
+  reporter: [["line"], ["html", { outputFolder: "../../playwright-report", open: "never" }]],
+  use: {
+    baseURL: "http://127.0.0.1:4173",
+    trace: "retain-on-failure",
+  },
+  webServer: {
+    command: "pnpm dev -- -p 4173",
+    url: "http://127.0.0.1:4173",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
+});

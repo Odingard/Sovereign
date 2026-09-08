@@ -24,6 +24,35 @@ export function validateEarlyAccessForm(
 ): ValidationResult {
   const errors: Record<string, string> = {};
 
+  if (
+    isServer &&
+    (typeof data.submissionId !== "string" || !/^[a-zA-Z0-9-]{16,80}$/.test(data.submissionId))
+  ) {
+    errors.submissionId = "A valid submission identifier is required.";
+  }
+
+  const stringFields = [
+    "firstName",
+    "lastName",
+    "workEmail",
+    "organization",
+    "role",
+    "practiceSize",
+    "locationCount",
+    "currentEhr",
+    "message",
+    "honeypot",
+  ] as const;
+  for (const field of stringFields) {
+    const value = data[field];
+    if (value !== undefined && typeof value !== "string") {
+      errors[field] = "Invalid field type.";
+    }
+  }
+  if (Object.values(errors).some((error) => error === "Invalid field type.")) {
+    return { isValid: false, errors };
+  }
+
   // 1. Anti-spam honeypot check (server-side and client-side)
   if (data.honeypot && data.honeypot.trim().length > 0) {
     return {

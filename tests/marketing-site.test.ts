@@ -12,9 +12,15 @@ import type {
   AnalyticsEvent,
   IAnalyticsAdapter,
 } from "../apps/marketing-site/src/lib/analytics/types";
-import { extractUtmParameters } from "../apps/marketing-site/src/lib/attribution/utm";
+import {
+  extractUtmParameters,
+  sanitizeUtmParameters,
+} from "../apps/marketing-site/src/lib/attribution/utm";
 import { SlidingWindowRateLimiter } from "../apps/marketing-site/src/lib/lead-capture/rate-limiter";
-import { InMemoryLeadRepository } from "../apps/marketing-site/src/lib/lead-capture/repository";
+import {
+  InMemoryLeadRepository,
+  WebhookLeadRepository,
+} from "../apps/marketing-site/src/lib/lead-capture/repository";
 import type { EarlyAccessFormData } from "../apps/marketing-site/src/lib/lead-capture/types";
 import { validateEarlyAccessForm } from "../apps/marketing-site/src/lib/lead-capture/validation";
 import { SITE_CONFIG } from "../apps/marketing-site/src/lib/seo/site-metadata";
@@ -38,12 +44,32 @@ function walkDir(dir: string, fileList: string[] = []): string[] {
   return fileList;
 }
 
+function validLeadPayload(submissionId: string): EarlyAccessFormData {
+  return {
+    submissionId,
+    firstName: "Jane",
+    lastName: "Doe",
+    workEmail: "jdoe@rheumassociates.com",
+    organization: "Pacific Arthritis Care",
+    role: "Rheumatologist / Physician",
+    practiceSize: "3-5 clinicians",
+    locationCount: "2-4 locations",
+    currentEhr: "athenahealth",
+    message: "Interested in early access for our biologic workflow.",
+    honeypot: "",
+    formRenderedAt: Date.now() - 5000,
+  };
+}
+
 describe("WEB-001 Public Marketing Website Test Suite", () => {
   // 1. Page Routes and Existence
   describe("Route Structure & Page Components", () => {
     const requiredRoutes = [
       "src/app/page.tsx", // Homepage
+      "src/app/product/page.tsx",
+      "src/app/platform/page.tsx",
       "src/app/rheumatology/page.tsx", // Sovereign Rheumatology
+      "src/app/security/page.tsx",
       "src/app/early-access/page.tsx", // Early Access
       "src/app/about/page.tsx", // About Sovereign
       "src/app/contact/page.tsx", // Contact
@@ -51,6 +77,7 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
       "src/app/terms/page.tsx", // Terms of Service
       "src/app/not-found.tsx", // 404
       "src/app/api/early-access/route.ts", // Lead generation API route
+      "src/app/api/social-card/route.tsx",
     ];
 
     for (const route of requiredRoutes) {
@@ -63,6 +90,33 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
     it("verifies robots.txt and sitemap.xml exist in public directory", () => {
       expect(existsSync(join(MARKETING_ROOT, "public/robots.txt"))).toBe(true);
       expect(existsSync(join(MARKETING_ROOT, "public/sitemap.xml"))).toBe(true);
+    });
+
+    it("gives every public route unique metadata and a route-specific social card", () => {
+      const routes = [
+        "product",
+        "platform",
+        "rheumatology",
+        "security",
+        "about",
+        "early-access",
+        "contact",
+        "privacy",
+        "terms",
+      ];
+      for (const route of routes) {
+        const content = readFileSync(join(MARKETING_ROOT, `src/app/${route}/page.tsx`), "utf-8");
+        expect(content).toContain(`path: "/${route}"`);
+        expect(content).toContain("title:");
+        expect(content).toContain("description:");
+      }
+      const socialCard = readFileSync(
+        join(MARKETING_ROOT, "src/app/api/social-card/route.tsx"),
+        "utf-8",
+      );
+      for (const chapter of [...routes.filter((route) => route !== "early-access"), "access"]) {
+        expect(socialCard).toContain(`${chapter}:`);
+      }
     });
   });
 
@@ -155,10 +209,10 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
     it("header contains all required navigation links and primary CTA", () => {
       const headerPath = join(MARKETING_ROOT, "src/components/navigation/Header.tsx");
       const content = readFileSync(headerPath, "utf-8");
+      expect(content).toContain('href="/product"');
+      expect(content).toContain('href="/platform"');
       expect(content).toContain('href="/rheumatology"');
-      expect(content).toContain('href="/#workflow"');
-      expect(content).toContain('href="/#audience"');
-      expect(content).toContain('href="/about#security"');
+      expect(content).toContain('href="/security"');
       expect(content).toContain('href="/about"');
       expect(content).toContain('href="/early-access"');
       expect(content).toContain("Request Early Access");
@@ -174,6 +228,20 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
       expect(content).toContain(
         "Please do not submit patient information or protected health information",
       );
+    });
+
+    it("preserves a mobile CTA path while simplifying the narrow header", () => {
+      const mobile = readFileSync(
+        join(MARKETING_ROOT, "src/components/navigation/MobileNav.tsx"),
+        "utf-8",
+      );
+      const navigationCss = readFileSync(
+        join(MARKETING_ROOT, "src/styles/navigation.css"),
+        "utf-8",
+      );
+      expect(mobile).toContain('href="/early-access"');
+      expect(navigationCss).toContain("@media (max-width: 520px)");
+      expect(navigationCss).toContain(".nav-actions > .btn");
     });
   });
 
@@ -199,19 +267,7 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
 
   // 5. Form Validation & Anti-PHI Guards
   describe("Lead Generation Form & Validation Logic", () => {
-    const validPayload: EarlyAccessFormData = {
-      firstName: "Jane",
-      lastName: "Doe",
-      workEmail: "jdoe@rheumassociates.com",
-      organization: "Pacific Arthritis Care",
-      role: "Rheumatologist / Physician",
-      practiceSize: "3-5 clinicians",
-      locationCount: "2-4 locations",
-      currentEhr: "athenahealth",
-      message: "Interested in early access for our biologic workflow.",
-      honeypot: "",
-      formRenderedAt: Date.now() - 5000, // 5 seconds ago
-    };
+    const validPayload = validLeadPayload("11111111-1111-4111-8111-111111111111");
 
     it("accepts valid business demographic submission", () => {
       const result = validateEarlyAccessForm(validPayload, true);
@@ -234,6 +290,7 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
     it("enforces required business fields", () => {
       const result = validateEarlyAccessForm(
         {
+          submissionId: "11111111-1111-4111-8111-111111111111",
           firstName: "",
           lastName: "",
           workEmail: "",
@@ -306,6 +363,21 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
       }
     });
 
+    it("surfaces an overlong EHR value through validation and form accessibility", () => {
+      const result = validateEarlyAccessForm(
+        { ...validPayload, currentEhr: "x".repeat(101) },
+        true,
+      );
+      expect(result.errors.currentEhr).toBeDefined();
+      const formContent = readFileSync(
+        join(MARKETING_ROOT, "src/components/forms/EarlyAccessForm.tsx"),
+        "utf-8",
+      );
+      expect(formContent).toContain("errors.currentEhr");
+      expect(formContent).toContain("maxLength={100}");
+      expect(formContent).toContain("aria-invalid={Boolean(errors.currentEhr)}");
+    });
+
     it("confirms NO PHI fields or file upload exist in EarlyAccessForm component", () => {
       const formPath = join(MARKETING_ROOT, "src/components/forms/EarlyAccessForm.tsx");
       const formContent = readFileSync(formPath, "utf-8");
@@ -333,6 +405,7 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
     it("successfully persists lead with UTM attribution in InMemoryLeadRepository", async () => {
       const repo = new InMemoryLeadRepository();
       const payload: EarlyAccessFormData = {
+        submissionId: "22222222-2222-4222-8222-222222222222",
         firstName: "Robert",
         lastName: "Smith",
         workEmail: "rsmith@arthritisassociates.org",
@@ -371,6 +444,40 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
       expect(stored.utm?.utm_campaign).toBe("rheum_q4_launch");
       expect(stored.status).toBe("NEW");
     });
+
+    it("returns the original lead for an idempotent retry", async () => {
+      const repo = new InMemoryLeadRepository();
+      const payload = {
+        ...validLeadPayload("33333333-3333-4333-8333-333333333333"),
+        submittedAt: new Date().toISOString(),
+      };
+      const first = await repo.saveLead(payload);
+      const retry = await repo.saveLead(payload);
+      expect(retry.leadId).toBe(first.leadId);
+      expect((await repo.getAllLeads()).length).toBe(1);
+    });
+
+    it("uses one stable idempotency key across shared repository instances", async () => {
+      const durable = new Map<string, string>();
+      const fetcher = async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const key = new Headers(init?.headers).get("Idempotency-Key") || "";
+        if (!durable.has(key)) durable.set(key, `REMOTE-${durable.size + 1}`);
+        return new Response(JSON.stringify({ leadId: durable.get(key) }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      };
+      const one = new WebhookLeadRepository("https://leads.example.test", undefined, fetcher);
+      const two = new WebhookLeadRepository("https://leads.example.test", undefined, fetcher);
+      const payload = {
+        ...validLeadPayload("44444444-4444-4444-8444-444444444444"),
+        submittedAt: new Date().toISOString(),
+      };
+      const first = await one.saveLead(payload);
+      const retry = await two.saveLead(payload);
+      expect(retry.leadId).toBe(first.leadId);
+      expect(durable.size).toBe(1);
+    });
   });
 
   // 7. Rate Limiter
@@ -388,6 +495,12 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
       expect(fourth.remaining).toBe(0);
       expect(fourth.resetInMs).toBeGreaterThan(0);
     });
+
+    it("keeps rotating identifiers within a bounded cache", () => {
+      const limiter = new SlidingWindowRateLimiter(2, 60_000, 3);
+      for (let index = 0; index < 20; index += 1) limiter.check(`client-${index}`);
+      expect(limiter.size()).toBeLessThanOrEqual(3);
+    });
   });
 
   // 8. Analytics & Attribution
@@ -402,6 +515,17 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
       expect(utm.utm_campaign).toBe("brand_search");
       expect(utm.utm_content).toBe("ad1");
       expect(utm.utm_term).toBe("sovereign_rheumatology");
+    });
+
+    it("allowlists and bounds untrusted attribution values", () => {
+      const clean = sanitizeUtmParameters({
+        utm_source: "x".repeat(500),
+        nested: { unsafe: true },
+        prototype: "ignored",
+      });
+      expect(clean?.utm_source?.length).toBe(120);
+      expect(clean).not.toHaveProperty("nested");
+      expect(sanitizeUtmParameters(["invalid"])).toBeUndefined();
     });
 
     it("dispatches analytics events to registered adapters", () => {
@@ -447,6 +571,41 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
       const footerPath = join(MARKETING_ROOT, "src/components/footer/Footer.tsx");
       const content = readFileSync(footerPath, "utf-8");
       expect(content).toContain("Sovereign Health AI LLC");
+    });
+
+    it("labels synthetic product views and forbids unsupported proof claims", () => {
+      const files = walkDir(MARKETING_ROOT);
+      const commandCenter = readFileSync(
+        join(MARKETING_ROOT, "src/components/visuals/CommandCenter.tsx"),
+        "utf-8",
+      );
+      expect(commandCenter).toContain("Illustrative product view");
+      expect(commandCenter).toContain("Synthetic data");
+
+      const forbiddenClaims = [
+        "98% accuracy",
+        "40% faster",
+        "fewer denials",
+        "1M patients",
+        "Trusted by 1,000 practices",
+      ];
+      for (const file of files) {
+        const content = readFileSync(file, "utf-8");
+        for (const claim of forbiddenClaims) expect(content).not.toContain(claim);
+      }
+    });
+
+    it("provides responsive story reductions and a usable reduced-motion mode", () => {
+      const experienceCss = readFileSync(
+        join(MARKETING_ROOT, "src/styles/experience.css"),
+        "utf-8",
+      );
+      expect(experienceCss).toContain("overflow-x: hidden");
+      expect(experienceCss).toContain("@media (max-width: 760px)");
+      expect(experienceCss).toContain(".core-nodes");
+      expect(experienceCss).toContain(".story-path");
+      expect(experienceCss).toContain("@media (prefers-reduced-motion: reduce)");
+      expect(experienceCss).toContain("animation: none");
     });
   });
 

@@ -1,116 +1,81 @@
-/**
- * @file Contact Page (/contact)
- * @description General business inquiries, design partner discussions, and security contact details
- * for Sovereign Health AI LLC.
- */
-
 import { constructMetadata } from "@/lib/seo/site-metadata";
 import Link from "next/link";
 
 export const metadata = constructMetadata({
-  title: "Contact Us | Sovereign Health AI LLC",
+  title: "Contact Sovereign | Product, Partnership & Investor Inquiries",
   description:
-    "Get in touch with Sovereign Health AI LLC for design partner inquiries, clinical workflow evaluation, and commercial partnerships.",
+    "Contact Sovereign Health AI LLC about a design partnership, practice inquiry, strategic partnership, security architecture, or investment.",
   path: "/contact",
 });
 
+const reasons = [
+  ["Design partnership", "Help shape Sovereign Rheumatology around real specialty workflows."],
+  [
+    "Product / practice inquiry",
+    "Discuss your practice, advanced-therapy access, and clinical operations.",
+  ],
+  [
+    "Strategic partnership",
+    "Explore aligned healthcare, integration, or commercial relationships.",
+  ],
+  [
+    "Investor inquiry",
+    "Discuss the specialty clinical intelligence and execution platform thesis.",
+  ],
+];
+
 export default function ContactPage() {
   return (
-    <div className="section section-subtle" style={{ minHeight: "80vh", paddingTop: "4.5rem" }}>
-      <div className="container container-narrow">
-        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-          <span className="badge badge-teal" style={{ marginBottom: "1rem" }}>
-            Get in Touch
-          </span>
-          <h1
-            style={{
-              fontSize: "2.75rem",
-              fontWeight: "800",
-              color: "var(--navy-primary)",
-              marginBottom: "1rem",
-            }}
-          >
-            Contact Sovereign
-          </h1>
-          <p
-            style={{
-              fontSize: "1.15rem",
-              color: "var(--text-secondary)",
-              maxWidth: "620px",
-              margin: "0 auto",
-            }}
-          >
-            Whether you are an independent rheumatology practice interested in our design-partner
-            program or exploring clinical partnerships, we look forward to speaking with you.
-          </p>
-        </div>
-
-        {/* Mandatory Anti-PHI Notice */}
-        <div className="phi-warning-banner" role="alert" style={{ marginBottom: "2.5rem" }}>
-          <span className="phi-warning-icon" aria-hidden="true">
-            &#9888;
-          </span>
-          <div>
-            <strong>Important Notice:</strong> Sovereign provides B2B software for healthcare
-            practices. We do not provide clinical advice or patient medical services. Please do not
-            submit patient health records, names, or clinical documents through any contact channel.
-          </div>
-        </div>
-
-        <div className="grid-2">
-          <div className="card" style={{ padding: "2.5rem" }}>
-            <h3
-              style={{ fontSize: "1.3rem", color: "var(--navy-primary)", marginBottom: "0.75rem" }}
-            >
-              Practice &amp; Design Partner Inquiries
-            </h3>
-            <p
-              style={{
-                fontSize: "0.95rem",
-                color: "var(--text-secondary)",
-                lineHeight: "1.6",
-                marginBottom: "1.5rem",
-              }}
-            >
-              Interested in seeing a demonstration of Sovereign Rheumatology or joining our
-              early-access evaluation cohort?
+    <>
+      <section className="page-hero" style={{ minHeight: 0 }}>
+        <div className="container split-story">
+          <div className="split-story__copy">
+            <span className="eyebrow">Contact Sovereign</span>
+            <h1 style={{ fontSize: "clamp(3.2rem, 7vw, 5.5rem)" }}>
+              Start the right conversation.
+            </h1>
+            <p>
+              Tell us why you are reaching out. We will route every business inquiry through one
+              provider-neutral contact path while the platform is in early access.
             </p>
-            <Link href="/early-access" className="btn btn-primary" style={{ width: "100%" }}>
-              Request Early Access Form
-            </Link>
-          </div>
-
-          <div className="card" style={{ padding: "2.5rem" }}>
-            <h3
-              style={{ fontSize: "1.3rem", color: "var(--navy-primary)", marginBottom: "0.75rem" }}
-            >
-              Corporate &amp; General Inquiries
-            </h3>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "1rem",
-                fontSize: "0.95rem",
-                color: "var(--text-secondary)",
-              }}
-            >
-              <div>
-                <strong>Entity:</strong> Sovereign Health AI LLC
-              </div>
-              <div>
-                <strong>General Inquiries:</strong> contact@sovereignhealth.ai
-              </div>
-              <div>
-                <strong>Security &amp; Privacy:</strong> security@sovereignhealth.ai
-              </div>
-              <div>
-                <strong>Press &amp; Partnerships:</strong> partnerships@sovereignhealth.ai
-              </div>
+            <div className="hero-actions">
+              <Link className="btn btn-primary btn-lg" href="/early-access">
+                Request Early Access
+              </Link>
+              <a className="text-link" href="mailto:contact@sovereignhealth.ai">
+                contact@sovereignhealth.ai <span>↗</span>
+              </a>
             </div>
           </div>
+          <div className="inquiry-grid">
+            {reasons.map(([title, body], index) => (
+              <article className="inquiry-card" key={title}>
+                <span>0{index + 1}</span>
+                <h2>{title}</h2>
+                <p>{body}</p>
+              </article>
+            ))}
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
+      <section className="story-section story-section--dark">
+        <div className="container container-narrow">
+          <div className="phi-warning-banner" role="alert">
+            <span className="phi-warning-icon" aria-hidden="true">
+              !
+            </span>
+            <div>
+              <strong>Do not send patient information.</strong> This public contact path is for
+              business inquiries only. Please do not submit patient information, clinical documents,
+              or protected health information.
+            </div>
+          </div>
+          <p style={{ textAlign: "center" }}>
+            Sovereign Health AI LLC · Security and architecture:{" "}
+            <a href="mailto:security@sovereignhealth.ai">security@sovereignhealth.ai</a>
+          </p>
+        </div>
+      </section>
+    </>
   );
 }

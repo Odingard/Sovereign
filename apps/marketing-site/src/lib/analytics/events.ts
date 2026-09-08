@@ -76,7 +76,9 @@ class AnalyticsDispatcher {
 
     for (const adapter of this.adapters) {
       try {
-        adapter.track(telemetryEvent);
+        Promise.resolve(adapter.track(telemetryEvent)).catch((err) => {
+          console.warn(`[Analytics Error] Adapter ${adapter.adapterName} failed:`, err);
+        });
       } catch (err) {
         console.warn(`[Analytics Error] Adapter ${adapter.adapterName} failed:`, err);
       }

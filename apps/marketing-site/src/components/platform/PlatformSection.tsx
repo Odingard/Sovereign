@@ -1,69 +1,37 @@
-/**
- * @file Sovereign Platform Section Component
- * @description Outlines the core 4-stage Sovereign operational loop:
- * Understand, Verify, Execute, Monitor.
- */
+const loop = [
+  ["Understand", "Understand the patient", "Know the longitudinal patient, not only today’s note."],
+  ["Verify", "Verify what matters", "Keep important assertions connected to supporting evidence."],
+  [
+    "Execute",
+    "Execute the workflow",
+    "Turn authorized clinical decisions into coordinated downstream work.",
+  ],
+  [
+    "Monitor",
+    "Monitor to completion",
+    "Track whether intended care progresses to confirmed completion.",
+  ],
+];
 
 export function PlatformSection() {
-  const steps = [
-    {
-      num: "01",
-      title: "Understand the patient",
-      subtitle: "Longitudinal Clinical Picture",
-      desc: "Synthesizes multi-year therapy exposure, disease activity markers, laboratory trends, and failure rationales into an authoritative, specialty-specific state.",
-    },
-    {
-      num: "02",
-      title: "Verify what matters",
-      subtitle: "Evidence & Provenance Linkage",
-      desc: "Every clinical finding and historical DMARD trial remains bound to verifiable source evidence. No hallucinations, no unanchored assumptions, no silent overwrites.",
-    },
-    {
-      num: "03",
-      title: "Execute the workflow",
-      subtitle: "Deterministic Orchestration",
-      desc: "Translates clinician decisions into a coordinated execution graph spanning prior authorization packages, pharmacy logistics, and infusion scheduling.",
-    },
-    {
-      num: "04",
-      title: "Monitor to completion",
-      subtitle: "Closed-Loop Tracking",
-      desc: "Actively tracks real-world progression across external entities, distinguishing attempted, transmitted, accepted, and clinically completed care delivery.",
-    },
-  ];
-
   return (
-    <section className="section" id="platform" aria-labelledby="platform-heading">
+    <section className="story-section" id="platform">
       <div className="container">
-        <div className="section-header">
-          <span className="section-tag">The Sovereign Architecture</span>
-          <h2 id="platform-heading" className="section-title">
-            Understand. Verify. Execute. Monitor.
-          </h2>
-          <p className="section-desc">
-            Sovereign does not treat healthcare as a one-shot conversational prompt. We provide a
-            deterministic, evidence-grounded execution platform designed to see complex clinical
-            intentions through to verifiable completion.
+        <div className="story-section__header story-section__header--center">
+          <span className="eyebrow">The Sovereign loop</span>
+          <h2>Understand. Verify. Execute. Monitor.</h2>
+          <p>
+            One continuous operating model connects what is known, what the clinician intends, what
+            is authorized, and what actually happens.
           </p>
         </div>
-
-        <div className="platform-loop-grid">
-          {steps.map((step) => (
-            <div key={step.num} className="platform-loop-card">
-              <span className="loop-step-badge">STAGE {step.num}</span>
-              <h3 className="loop-step-title">{step.title}</h3>
-              <p
-                style={{
-                  fontSize: "0.85rem",
-                  fontWeight: "600",
-                  color: "var(--teal-hover)",
-                  marginBottom: "0.75rem",
-                }}
-              >
-                {step.subtitle}
-              </p>
-              <p className="loop-step-desc">{step.desc}</p>
-            </div>
+        <div className="loop-grid">
+          {loop.map(([verb, title, body], index) => (
+            <article className="loop-card" key={verb}>
+              <span>0{index + 1}</span>
+              <h3>{title}</h3>
+              <p>{body}</p>
+            </article>
           ))}
         </div>
       </div>

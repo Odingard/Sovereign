@@ -14,6 +14,7 @@ import { type FormEvent, useEffect, useState } from "react";
 
 export function EarlyAccessForm({ initialProgram }: { initialProgram?: string }) {
   const [formData, setFormData] = useState<EarlyAccessFormData>({
+    submissionId: "pending-client-id",
     firstName: "",
     lastName: "",
     workEmail: "",
@@ -36,7 +37,11 @@ export function EarlyAccessForm({ initialProgram }: { initialProgram?: string })
   const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, formRenderedAt: Date.now() }));
+    setFormData((prev) => ({
+      ...prev,
+      formRenderedAt: Date.now(),
+      submissionId: globalThis.crypto.randomUUID(),
+    }));
   }, []);
 
   const handleFieldChange = (name: keyof EarlyAccessFormData, value: string) => {
@@ -352,11 +357,18 @@ export function EarlyAccessForm({ initialProgram }: { initialProgram?: string })
             <input
               id="field-currentEhr"
               type="text"
-              className="form-input"
+              className={`form-input ${errors.currentEhr ? "form-input-error" : ""}`}
               placeholder="e.g. Epic, Athenahealth, NextGen, eCW"
               value={formData.currentEhr || ""}
               onChange={(e) => handleFieldChange("currentEhr", e.target.value)}
+              maxLength={100}
+              aria-invalid={Boolean(errors.currentEhr)}
             />
+            {errors.currentEhr && (
+              <span className="field-error" role="alert">
+                {errors.currentEhr}
+              </span>
+            )}
           </div>
 
           {/* Message / Goals (Optional) */}

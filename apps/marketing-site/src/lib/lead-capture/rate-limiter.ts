@@ -12,14 +12,21 @@ export class SlidingWindowRateLimiter {
   private cache = new Map<string, RateLimitEntry>();
   private readonly maxRequests: number;
   private readonly windowMs: number;
+  private readonly maxEntries: number;
+  private checks = 0;
 
-  constructor(maxRequests = 5, windowMs = 10 * 60 * 1000) {
+  constructor(maxRequests = 5, windowMs = 10 * 60 * 1000, maxEntries = 10_000) {
     this.maxRequests = maxRequests;
     this.windowMs = windowMs;
+    this.maxEntries = maxEntries;
   }
 
   public check(identifier: string): { allowed: boolean; remaining: number; resetInMs: number } {
     const now = Date.now();
+    this.checks += 1;
+    if (this.checks % 100 === 0 || this.cache.size >= this.maxEntries) {
+      this.sweep(now);
+    }
     const entry = this.cache.get(identifier);
 
     if (!entry || now > entry.resetTime) {
@@ -52,6 +59,21 @@ export class SlidingWindowRateLimiter {
 
   public clear(): void {
     this.cache.clear();
+  }
+
+  public size(): number {
+    return this.cache.size;
+  }
+
+  private sweep(now: number): void {
+    for (const [key, entry] of this.cache) {
+      if (entry.resetTime <= now) this.cache.delete(key);
+    }
+    while (this.cache.size >= this.maxEntries) {
+      const oldest = this.cache.keys().next().value as string | undefined;
+      if (!oldest) break;
+      this.cache.delete(oldest);
+    }
   }
 }
 

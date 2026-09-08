@@ -23,25 +23,22 @@ export function Header() {
         <div className="header-inner">
           <Link href="/" className="brand-logo" aria-label="Sovereign Home">
             <span className="brand-logo-mark" aria-hidden="true">
-              S
+              <i />
             </span>
             <span>Sovereign</span>
           </Link>
 
           <nav className="nav-desktop" aria-label="Main Navigation">
-            <Link href="/#platform" className="nav-link">
+            <Link href="/product" className="nav-link">
               Product
+            </Link>
+            <Link href="/platform" className="nav-link">
+              Platform
             </Link>
             <Link href="/rheumatology" className="nav-link">
               Rheumatology
             </Link>
-            <Link href="/#workflow" className="nav-link">
-              How It Works
-            </Link>
-            <Link href="/#audience" className="nav-link">
-              For Practices
-            </Link>
-            <Link href="/about#security" className="nav-link">
+            <Link href="/security" className="nav-link">
               Security
             </Link>
             <Link href="/about" className="nav-link">

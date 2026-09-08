@@ -23,6 +23,7 @@ export type RoleOption =
   | "Other";
 
 export interface EarlyAccessFormData {
+  readonly submissionId: string;
   readonly firstName: string;
   readonly lastName: string;
   readonly workEmail: string;
@@ -44,6 +45,7 @@ export interface LeadSubmissionPayload extends EarlyAccessFormData {
 }
 
 export interface StoredLeadRecord {
+  readonly submissionId: string;
   readonly leadId: string;
   readonly firstName: string;
   readonly lastName: string;

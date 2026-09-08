@@ -28,6 +28,13 @@ export function constructMetadata({
 } = {}): Metadata {
   const fullTitle = title ? `${title}` : `${SITE_CONFIG.name} | ${SITE_CONFIG.tagline}`;
   const canonicalUrl = `${SITE_CONFIG.url}${path}`;
+  const chapter =
+    path === "/" || path === ""
+      ? "home"
+      : path === "/early-access"
+        ? "access"
+        : path.slice(1).split("/")[0];
+  const socialImage = `${SITE_CONFIG.url}/api/social-card?chapter=${chapter}`;
 
   return {
     title: fullTitle,
@@ -44,11 +51,13 @@ export function constructMetadata({
       siteName: SITE_CONFIG.name,
       locale: "en_US",
       type: "website",
+      images: [{ url: socialImage, width: 1200, height: 630, alt: `${fullTitle} — Sovereign` }],
     },
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
       description,
+      images: [socialImage],
     },
     robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
   };

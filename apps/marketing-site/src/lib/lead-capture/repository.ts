@@ -1,7 +1,6 @@
 /**
- * @file Provider-Neutral Lead Capture Storage
- * @description Decouples lead capture from specific CRM vendors (HubSpot/Salesforce/Close).
- * Implements a durable in-memory repository suitable for early-access campaigns.
+ * Provider-neutral lead persistence.
+ * Production succeeds only after a configured shared endpoint confirms durable storage.
  */
 
 import { randomUUID } from "node:crypto";
@@ -12,60 +11,121 @@ import type {
   StoredLeadRecord,
 } from "./types";
 
+const SUCCESS_MESSAGE =
+  "Thank you for your interest in Sovereign. Our team will review your practice information and be in touch.";
+
+function toStoredRecord(payload: LeadSubmissionPayload, leadId: string): StoredLeadRecord {
+  return {
+    submissionId: payload.submissionId,
+    leadId,
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    workEmail: payload.workEmail,
+    organization: payload.organization,
+    role: payload.role,
+    practiceSize: payload.practiceSize,
+    locationCount: payload.locationCount,
+    currentEhr: payload.currentEhr,
+    message: payload.message,
+    utm: payload.utm,
+    createdAt: payload.submittedAt || new Date().toISOString(),
+    status: "NEW",
+  };
+}
+
 export class InMemoryLeadRepository implements ILeadRepository {
   public readonly repositoryName = "InMemoryLeadRepository";
-  private leads: StoredLeadRecord[] = [];
+  private readonly leads = new Map<string, StoredLeadRecord>();
 
   public async saveLead(payload: LeadSubmissionPayload): Promise<LeadSubmissionResult> {
+    const existing = this.leads.get(payload.submissionId);
+    if (existing) return { success: true, leadId: existing.leadId, message: SUCCESS_MESSAGE };
     const leadId = `LEAD-${randomUUID().slice(0, 8).toUpperCase()}`;
-
-    const record: StoredLeadRecord = {
-      leadId,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      workEmail: payload.workEmail,
-      organization: payload.organization,
-      role: payload.role,
-      practiceSize: payload.practiceSize,
-      locationCount: payload.locationCount,
-      currentEhr: payload.currentEhr,
-      message: payload.message,
-      utm: payload.utm,
-      createdAt: payload.submittedAt || new Date().toISOString(),
-      status: "NEW",
-    };
-
-    this.leads.push(record);
-
-    if (process.env.NODE_ENV !== "production") {
-      console.log(`[Lead Captured: ${leadId}]`, {
-        name: `${record.firstName} ${record.lastName}`,
-        email: record.workEmail,
-        org: record.organization,
-        size: record.practiceSize,
-      });
-    }
-
-    return {
-      success: true,
-      leadId,
-      message:
-        "Thank you for your interest in Sovereign. Our team will review your practice information and be in touch.",
-    };
+    this.leads.set(payload.submissionId, toStoredRecord(payload, leadId));
+    return { success: true, leadId, message: SUCCESS_MESSAGE };
   }
 
   public async getAllLeads(): Promise<ReadonlyArray<StoredLeadRecord>> {
-    return [...this.leads];
+    return [...this.leads.values()];
   }
 
   public clear(): void {
-    this.leads = [];
+    this.leads.clear();
   }
 }
 
-// Default singleton repository
-export const defaultLeadRepository = new InMemoryLeadRepository();
+type FetchLike = typeof fetch;
+
+export class WebhookLeadRepository implements ILeadRepository {
+  public readonly repositoryName = "WebhookLeadRepository";
+
+  constructor(
+    private readonly endpoint: string,
+    private readonly token?: string,
+    private readonly fetcher: FetchLike = fetch,
+  ) {}
+
+  public async saveLead(payload: LeadSubmissionPayload): Promise<LeadSubmissionResult> {
+    const response = await this.fetcher(this.endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": payload.submissionId,
+        ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+      },
+      body: JSON.stringify({
+        submissionId: payload.submissionId,
+        contact: {
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          workEmail: payload.workEmail,
+          organization: payload.organization,
+          role: payload.role,
+        },
+        practice: {
+          size: payload.practiceSize,
+          locations: payload.locationCount,
+          currentEhr: payload.currentEhr,
+        },
+        message: payload.message,
+        attribution: payload.utm,
+        submittedAt: payload.submittedAt,
+      }),
+      signal: AbortSignal.timeout(8_000),
+    });
+
+    if (!response.ok) {
+      return { success: false, message: "We could not save your request. Please try again." };
+    }
+
+    const data = (await response.json()) as { leadId?: unknown };
+    if (typeof data.leadId !== "string" || !/^[a-zA-Z0-9_-]{1,100}$/.test(data.leadId)) {
+      return { success: false, message: "The lead service returned an invalid confirmation." };
+    }
+    return { success: true, leadId: data.leadId, message: SUCCESS_MESSAGE };
+  }
+}
+
+class UnavailableLeadRepository implements ILeadRepository {
+  public readonly repositoryName = "UnavailableLeadRepository";
+  public async saveLead(): Promise<LeadSubmissionResult> {
+    return {
+      success: false,
+      message: "Early-access requests are temporarily unavailable. Please try again later.",
+    };
+  }
+}
+
+const developmentRepository = new InMemoryLeadRepository();
 
 export function getLeadRepository(): ILeadRepository {
-  return defaultLeadRepository;
+  const endpoint = process.env.SOVEREIGN_LEAD_ENDPOINT;
+  if (endpoint) {
+    return new WebhookLeadRepository(endpoint, process.env.SOVEREIGN_LEAD_API_TOKEN);
+  }
+  return process.env.NODE_ENV === "production"
+    ? new UnavailableLeadRepository()
+    : developmentRepository;
 }
+
+export const defaultLeadRepository = developmentRepository;

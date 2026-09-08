@@ -12,6 +12,8 @@ import { ProductPillarsSection } from "@/components/pillars/ProductPillarsSectio
 import { PlatformSection } from "@/components/platform/PlatformSection";
 import { ProblemSection } from "@/components/problem/ProblemSection";
 import { RheumatologySection } from "@/components/rheumatology/RheumatologySection";
+import { CommandCenter } from "@/components/visuals/CommandCenter";
+import { CoreToCommandTransition } from "@/components/visuals/CoreToCommandTransition";
 import { WorkflowHeroSection } from "@/components/workflow/WorkflowHeroSection";
 import { constructMetadata } from "@/lib/seo/site-metadata";
 
@@ -26,8 +28,23 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
+      <CoreToCommandTransition />
       <ProblemSection />
       <PlatformSection />
+      <section className="story-section story-section--mist">
+        <div className="container">
+          <div className="story-section__header">
+            <span className="eyebrow">Product proof</span>
+            <h2>Understanding becomes an operating environment.</h2>
+            <p>
+              Clinical State, evidence, therapy history, Clinical Intent, access pathways,
+              monitoring, and recent activity remain connected without confusing discussion with
+              decision or an attempt with completion.
+            </p>
+          </div>
+          <CommandCenter />
+        </div>
+      </section>
       <RheumatologySection />
       <WorkflowHeroSection />
       <ClinicalAuthoritySection />

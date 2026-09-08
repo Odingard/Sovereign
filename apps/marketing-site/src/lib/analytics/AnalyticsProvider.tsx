@@ -6,7 +6,8 @@
  * and emits page_view on path changes.
  */
 
-import { type ReactNode, createContext, useContext, useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { type ReactNode, Suspense, createContext, useContext, useEffect } from "react";
 import { captureAndStoreUtmParameters } from "../attribution/utm";
 import { trackPageView } from "./events";
 
@@ -16,18 +17,26 @@ interface AnalyticsContextValue {
 
 const AnalyticsContext = createContext<AnalyticsContextValue>({ isInitialized: true });
 
-export function AnalyticsProvider({ children }: { children: ReactNode }) {
+function NavigationTracker() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const url = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+
   useEffect(() => {
-    // 1. Capture incoming advertising/campaign UTM parameters
     captureAndStoreUtmParameters();
+    trackPageView(url, document.title);
+  }, [url]);
 
-    // 2. Track initial client page view
-    trackPageView(window.location.pathname, document.title);
-  }, []);
+  return null;
+}
 
+export function AnalyticsProvider({ children }: { children: ReactNode }) {
   return (
     <AnalyticsContext.Provider value={{ isInitialized: true }}>
       {children}
+      <Suspense fallback={null}>
+        <NavigationTracker />
+      </Suspense>
     </AnalyticsContext.Provider>
   );
 }

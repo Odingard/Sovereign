@@ -63,3 +63,19 @@ jobs:
         run: pnpm run verify
         env:
           SOVEREIGN_DATABASE_URL: postgresql://sovereign_dev:sovereign_dev_password@localhost:5432/sovereign_test
+
+      - name: Install marketing browser
+        run: pnpm --filter @sovereign/marketing-site exec playwright install --with-deps chromium
+
+      - name: Verify marketing routes and responsive experience
+        run: pnpm --filter @sovereign/marketing-site test:browser
+
+      - name: Upload marketing visual QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketing-visual-qa
+          path: |
+            test-results/marketing-browser/screenshots
+            playwright-report
+          if-no-files-found: warn

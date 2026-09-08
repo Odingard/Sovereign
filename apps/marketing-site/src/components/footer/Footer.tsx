@@ -22,7 +22,7 @@ export function Footer() {
           <div>
             <div className="brand-logo" style={{ color: "#ffffff", marginBottom: "1rem" }}>
               <span className="brand-logo-mark" aria-hidden="true">
-                S
+                <i />
               </span>
               <span>Sovereign</span>
             </div>
@@ -51,13 +51,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/#workflow" className="footer-link">
-                  Therapy Access & Continuity
+                <Link href="/product" className="footer-link">
+                  Product
                 </Link>
               </li>
               <li>
-                <Link href="/#platform" className="footer-link">
-                  Platform Architecture
+                <Link href="/platform" className="footer-link">
+                  Platform
                 </Link>
               </li>
               <li>
@@ -72,8 +72,8 @@ export function Footer() {
             <h4 className="footer-col-title">For Practices</h4>
             <ul className="footer-links">
               <li>
-                <Link href="/#audience" className="footer-link">
-                  Rheumatology Groups
+                <Link href="/security" className="footer-link">
+                  Security &amp; Authority
                 </Link>
               </li>
               <li>
@@ -82,8 +82,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/about#security" className="footer-link">
-                  Security & Tenancy
+                <Link href="/contact" className="footer-link">
+                  Strategic Partnerships
                 </Link>
               </li>
               <li>
