@@ -188,6 +188,9 @@ p {
 .page-hero--authority .eyebrow {
   color: #6ce2ee;
 }
+.page-hero--authority h1 {
+  color: #fff;
+}
 .page-hero--authority .text-link {
   color: #fff;
 }
@@ -952,6 +955,7 @@ p {
   max-width: 760px;
 }
 .chapter-cta h2 {
+  color: #fff;
   font-size: clamp(2.2rem, 4vw, 3.6rem);
   margin: .7rem 0;
 }
