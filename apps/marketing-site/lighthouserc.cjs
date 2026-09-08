@@ -2,7 +2,7 @@ module.exports = {
   ci: {
     collect: {
       numberOfRuns: 1,
-      startServerCommand: "pnpm exec next dev -p 4173",
+      startServerCommand: "pnpm exec next build && pnpm exec next start -p 4173",
       startServerReadyPattern: "Ready in",
       url: ["http://127.0.0.1:4173/"],
       settings: {
@@ -20,7 +20,7 @@ module.exports = {
     },
     upload: {
       target: "filesystem",
-      outputDir: "../../test-results/marketing-browser/lighthouse",
+      outputDir: "../../playwright-report/lighthouse",
     },
   },
 };
