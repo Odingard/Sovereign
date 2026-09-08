@@ -20,7 +20,7 @@ module.exports = {
     },
     upload: {
       target: "filesystem",
-      outputDir: "../../lighthouse-results",
+      outputDir: "../../test-results/marketing-browser/lighthouse",
     },
   },
 };

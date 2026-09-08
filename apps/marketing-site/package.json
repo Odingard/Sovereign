@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:browser": "playwright test",
+    "test:browser": "playwright test && lhci autorun --config=./lighthouserc.cjs",
     "test:lighthouse": "lhci autorun --config=./lighthouserc.cjs",
     "typecheck": "tsc --noEmit"
   },
