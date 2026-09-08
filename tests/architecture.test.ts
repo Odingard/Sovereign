@@ -112,4 +112,18 @@ describe("Sovereign Architecture & Doctrine Tests", () => {
     expect(content).not.toContain("gemini");
     expect(content).not.toContain("@sovereign/provider-ai");
   });
+
+  it("verifies packages/domain contains zero imports of specialty packages (ADR-0011)", () => {
+    const domainIndexPath = join(process.cwd(), "packages/domain/src/index.ts");
+    const content = readFileSync(domainIndexPath, "utf-8");
+    expect(content).not.toContain("@sovereign/specialty");
+    expect(content).not.toContain("specialties");
+    expect(content).not.toContain("rheumatology");
+  });
+
+  it("proves no sixth authoritative aggregate exists (ADR-0011)", () => {
+    expect(AUTHORITATIVE_OBJECT_TYPES).toHaveLength(5);
+    expect(AUTHORITATIVE_OBJECT_TYPES).not.toContain("RHEUMATOID_ARTHRITIS");
+    expect(AUTHORITATIVE_OBJECT_TYPES).not.toContain("RA_PATIENT_STATE");
+  });
 });

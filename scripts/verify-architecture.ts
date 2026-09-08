@@ -51,6 +51,9 @@ function verifyArchitecture(): { passed: boolean; violations: string[] } {
     "@sovereign/persistence",
     "@sovereign/contracts",
     "@sovereign/application",
+    "@sovereign/specialty",
+    "specialties",
+    "rheumatology",
     "aws-sdk",
     "@azure",
   ];
@@ -60,7 +63,35 @@ function verifyArchitecture(): { passed: boolean; violations: string[] } {
     for (const badImport of prohibitedDomainImports) {
       if (content.includes(`'${badImport}`) || content.includes(`"${badImport}`)) {
         violations.push(
-          `[FORBIDDEN DOMAIN IMPORT] ${file.replace(ROOT, "")}: imports '${badImport}'. Domain must remain completely pure.`,
+          `[FORBIDDEN DOMAIN IMPORT] ${file.replace(ROOT, "")}: imports '${badImport}'. Domain must remain completely pure and disease-agnostic.`,
+        );
+      }
+    }
+  }
+
+  // 1b. Check packages/specialties (must be pure specialty domain, depends only on canonical domain)
+  const specialtyFiles = walkDir(join(ROOT, "packages/specialties"));
+  const prohibitedSpecialtyImports = [
+    "@google",
+    "@google-cloud",
+    "@google/genai",
+    "gemini",
+    "@temporalio",
+    "temporal",
+    "@sovereign/provider-ai",
+    "@sovereign/persistence",
+    "@sovereign/contracts",
+    "@sovereign/application",
+    "aws-sdk",
+    "@azure",
+  ];
+
+  for (const file of specialtyFiles) {
+    const content = readFileSync(file, "utf-8");
+    for (const badImport of prohibitedSpecialtyImports) {
+      if (content.includes(`'${badImport}`) || content.includes(`"${badImport}`)) {
+        violations.push(
+          `[FORBIDDEN SPECIALTY IMPORT] ${file.replace(ROOT, "")}: imports '${badImport}'. Specialties must remain pure domain models.`,
         );
       }
     }

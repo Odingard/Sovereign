@@ -17,6 +17,9 @@ importers:
       '@sovereign/persistence':
         specifier: workspace:*
         version: link:packages/persistence
+      '@sovereign/specialty-rheumatology-ra':
+        specifier: workspace:*
+        version: link:packages/specialties/rheumatology/ra
       '@types/node':
         specifier: ^20.17.19
         version: 20.19.43
@@ -134,6 +137,12 @@ importers:
       '@types/pg':
         specifier: ^8.11.11
         version: 8.23.1
+
+  packages/specialties/rheumatology/ra:
+    dependencies:
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../../../domain
 
   packages/workflow-runtime:
     dependencies:

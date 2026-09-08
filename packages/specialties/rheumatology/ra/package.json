@@ -1,0 +1,13 @@
+{
+  "name": "@sovereign/specialty-rheumatology-ra",
+  "version": "0.1.0",
+  "description": "Sovereign Rheumatoid Arthritis Specialty Clinical State Model",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/domain": "workspace:*"
+  }
+}

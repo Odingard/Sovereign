@@ -24,6 +24,7 @@
     "pg": "^8.13.1",
     "@sovereign/domain": "workspace:*",
     "@sovereign/persistence": "workspace:*",
+    "@sovereign/specialty-rheumatology-ra": "workspace:*",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8",
