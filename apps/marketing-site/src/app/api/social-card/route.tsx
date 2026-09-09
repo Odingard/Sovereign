@@ -68,13 +68,12 @@ export function GET(request: NextRequest) {
             fontWeight: 700,
           }}
         >
-          <div
-            style={{
-              background: "linear-gradient(145deg,#3dd3e2,#3176ff)",
-              borderRadius: "12px",
-              height: "44px",
-              width: "44px",
-            }}
+          <img
+            alt=""
+            height="64"
+            src={`${request.nextUrl.origin}/brand/sovereign-mark.webp`}
+            style={{ objectFit: "contain", width: "62px" }}
+            width="62"
           />
           Sovereign
         </div>

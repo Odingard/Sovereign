@@ -255,6 +255,20 @@
   font-size: 0.9rem;
 }
 
+.footer-brand-lockup {
+  background: #ffffff;
+  border-radius: 0.8rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.8rem;
+  width: min(20rem, 100%);
+}
+
+.footer-brand-lockup img {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
 .footer-top {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;

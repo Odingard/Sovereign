@@ -22,43 +22,12 @@
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-weight: 800;
-  font-size: 1.35rem;
-  letter-spacing: -0.03em;
-  color: var(--navy-primary);
   text-decoration: none;
 }
 
-.brand-logo-mark {
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--radius-md);
-  background: #071b2d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 2px 4px rgba(13, 148, 136, 0.25);
-}
-
-.brand-logo-mark i,
-.brand-logo-mark i::before {
-  border: 2px solid #5de0eb;
-  border-radius: 50%;
-  content: "";
-  height: 12px;
-  position: absolute;
-  transform: rotate(-24deg);
-  width: 20px;
-}
-
-.brand-logo-mark i::before {
-  left: -2px;
-  top: 4px;
-  transform: rotate(48deg);
+.brand-logo-image {
+  height: auto;
+  width: 12rem;
 }
 
 .nav-desktop {
@@ -135,12 +104,10 @@
     display: none;
   }
   .brand-logo {
-    font-size: 1.18rem;
-    gap: .55rem;
+    max-width: calc(100vw - 5rem);
   }
-  .brand-logo-mark {
-    height: 1.8rem;
-    width: 1.8rem;
+  .brand-logo-image {
+    width: 9.8rem;
   }
   .mobile-nav-toggle {
     padding: .42rem;

@@ -6,6 +6,7 @@
  */
 
 import { trackCtaClick } from "@/lib/analytics/events";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { MobileNav } from "./MobileNav";
@@ -22,10 +23,14 @@ export function Header() {
       <div className="container">
         <div className="header-inner">
           <Link href="/" className="brand-logo" aria-label="Sovereign Home">
-            <span className="brand-logo-mark" aria-hidden="true">
-              <i />
-            </span>
-            <span>Sovereign</span>
+            <Image
+              className="brand-logo-image"
+              src="/brand/sovereign-lockup.webp"
+              alt="Sovereign"
+              width={1559}
+              height={520}
+              priority
+            />
           </Link>
 
           <nav className="nav-desktop" aria-label="Main Navigation">

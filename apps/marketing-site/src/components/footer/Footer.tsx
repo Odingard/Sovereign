@@ -4,6 +4,7 @@
  * product navigation, and mandatory patient information disclaimers.
  */
 
+import Image from "next/image";
 import Link from "next/link";
 
 export function Footer() {
@@ -20,11 +21,13 @@ export function Footer() {
 
         <div className="footer-top">
           <div>
-            <div className="brand-logo" style={{ color: "#ffffff", marginBottom: "1rem" }}>
-              <span className="brand-logo-mark" aria-hidden="true">
-                <i />
-              </span>
-              <span>Sovereign</span>
+            <div className="footer-brand-lockup">
+              <Image
+                src="/brand/sovereign-lockup.webp"
+                alt="Sovereign — Specialty Clinical Intelligence & Execution"
+                width={1559}
+                height={520}
+              />
             </div>
             <p
               style={{

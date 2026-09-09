@@ -556,6 +556,32 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
 
   // 9. Brand Protection & Prohibited Strings
   describe("Brand Safety & Prohibited Corporate Entities", () => {
+    it("uses the approved Sovereign deck artwork across public brand surfaces", () => {
+      const lockup = join(MARKETING_ROOT, "public/brand/sovereign-lockup.webp");
+      const mark = join(MARKETING_ROOT, "public/brand/sovereign-mark.webp");
+      const icon = join(MARKETING_ROOT, "src/app/icon.png");
+      const header = readFileSync(
+        join(MARKETING_ROOT, "src/components/navigation/Header.tsx"),
+        "utf-8",
+      );
+      const footer = readFileSync(
+        join(MARKETING_ROOT, "src/components/footer/Footer.tsx"),
+        "utf-8",
+      );
+      const socialCard = readFileSync(
+        join(MARKETING_ROOT, "src/app/api/social-card/route.tsx"),
+        "utf-8",
+      );
+
+      expect(existsSync(lockup)).toBe(true);
+      expect(existsSync(mark)).toBe(true);
+      expect(existsSync(icon)).toBe(true);
+      expect(header).toContain("/brand/sovereign-lockup.webp");
+      expect(footer).toContain("/brand/sovereign-lockup.webp");
+      expect(socialCard).toContain("/brand/sovereign-mark.webp");
+      expect(existsSync(join(MARKETING_ROOT, "src/app/icon.svg"))).toBe(false);
+    });
+
     it("strictly forbids parent-company entity 'Six Sense Enterprise Services LLC' anywhere in marketing site", () => {
       const files = walkDir(MARKETING_ROOT);
       const forbiddenString = "Six Sense Enterprise Services";
