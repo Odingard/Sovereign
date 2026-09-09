@@ -1,0 +1,138 @@
+/**
+ * @file Global Site Footer Component
+ * @description Renders corporate identity (Sovereign Health AI LLC), legal links,
+ * product navigation, and mandatory patient information disclaimers.
+ */
+
+import Image from "next/image";
+import Link from "next/link";
+
+export function Footer() {
+  return (
+    <footer className="site-footer">
+      <div className="container">
+        {/* Warning Banner */}
+        <div className="phi-warning-footer" role="note">
+          <strong>Notice:</strong> Sovereign provides specialty care execution software for
+          healthcare practices. This public marketing website does not collect, process, or store
+          patient records. Please do not submit patient information or protected health information
+          through any form or contact channel on this site.
+        </div>
+
+        <div className="footer-top">
+          <div>
+            <div className="footer-brand-lockup">
+              <Image
+                src="/brand/sovereign-lockup.webp"
+                alt="Sovereign — Specialty Clinical Intelligence & Execution"
+                width={1559}
+                height={520}
+              />
+            </div>
+            <p
+              style={{
+                color: "var(--text-inverse-muted)",
+                fontSize: "0.95rem",
+                maxWidth: "340px",
+                lineHeight: "1.6",
+              }}
+            >
+              Specialty clinical intelligence and execution platform. From clinical decision to
+              completed care.
+            </p>
+            <p
+              style={{ color: "var(--text-inverse-muted)", fontSize: "0.85rem", marginTop: "1rem" }}
+            >
+              Sovereign Health AI LLC
+            </p>
+          </div>
+
+          <div>
+            <h2 className="footer-col-title">Specialty Products</h2>
+            <ul className="footer-links">
+              <li>
+                <Link href="/rheumatology" className="footer-link">
+                  Sovereign Rheumatology
+                </Link>
+              </li>
+              <li>
+                <Link href="/product" className="footer-link">
+                  Product
+                </Link>
+              </li>
+              <li>
+                <Link href="/platform" className="footer-link">
+                  Platform
+                </Link>
+              </li>
+              <li>
+                <Link href="/early-access" className="footer-link">
+                  Design Partner Program
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="footer-col-title">For Practices</h2>
+            <ul className="footer-links">
+              <li>
+                <Link href="/security" className="footer-link">
+                  Security &amp; Authority
+                </Link>
+              </li>
+              <li>
+                <Link href="/#authority" className="footer-link">
+                  Clinical Authority Model
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="footer-link">
+                  Strategic Partnerships
+                </Link>
+              </li>
+              <li>
+                <Link href="/early-access" className="footer-link">
+                  Request Early Access
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="footer-col-title">Company & Legal</h2>
+            <ul className="footer-links">
+              <li>
+                <Link href="/about" className="footer-link">
+                  About Sovereign
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="footer-link">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="footer-link">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="footer-link">
+                  Terms of Service
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="footer-bottom">
+          <div>&copy; {new Date().getFullYear()} Sovereign Health AI LLC. All rights reserved.</div>
+          <div>
+            Clinician Decides &bull; Sovereign Executes &bull; Synthetic Development Environment
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@sovereign/marketing-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sovereign Health AI - Public Marketing Website & Homepage",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test:browser": "playwright test && lhci autorun --config=./lighthouserc.cjs",
+    "test:lighthouse": "lhci autorun --config=./lighthouserc.cjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^14.2.24",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^20.17.19",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.7.3"
+  }
+}

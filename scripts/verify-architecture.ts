@@ -97,7 +97,40 @@ function verifyArchitecture(): { passed: boolean; violations: string[] } {
     }
   }
 
-  // 4. Verify test fixtures stay in test-data/synthetic-only
+  // 4. Check apps/marketing-site (cannot import clinical persistence, domain, authority, or execution graph)
+  const marketingFiles = walkDir(join(ROOT, "apps/marketing-site/src"));
+  const prohibitedMarketingImports = [
+    "@sovereign/persistence",
+    "@sovereign/domain",
+    "@sovereign/application",
+    "@temporalio",
+    "@google/genai",
+    "@google-cloud",
+    "ClinicalState",
+    "ClinicalEvidence",
+    "ClinicalIntent",
+    "ExecutionGraph",
+    "TherapyAccessState",
+  ];
+
+  for (const file of marketingFiles) {
+    const content = readFileSync(file, "utf-8");
+    for (const badImport of prohibitedMarketingImports) {
+      if (content.includes(`'${badImport}`) || content.includes(`"${badImport}`)) {
+        violations.push(
+          `[FORBIDDEN MARKETING IMPORT] ${file.replace(ROOT, "")}: imports '${badImport}'. Marketing site must remain completely decoupled from clinical internals.`,
+        );
+      }
+    }
+    // Brand safety rule: Six Sense Enterprise Services LLC must NEVER appear in public marketing site
+    if (content.includes("Six Sense Enterprise Services")) {
+      violations.push(
+        `[FORBIDDEN BRAND NAME] ${file.replace(ROOT, "")}: contains prohibited parent-company branding string.`,
+      );
+    }
+  }
+
+  // 5. Verify test fixtures stay in test-data/synthetic-only
   const allFiles = walkDir(ROOT);
   for (const file of allFiles) {
     const relative = file.replace(`${ROOT}/`, "");

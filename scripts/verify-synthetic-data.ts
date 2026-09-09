@@ -26,7 +26,7 @@ const PHI_PATTERNS = [
   },
 ];
 
-const IGNORE_DIRS = new Set([".git", "node_modules", "dist", ".agents"]);
+const IGNORE_DIRS = new Set([".git", "node_modules", "dist", ".agents", ".next"]);
 const IGNORE_FILES = new Set(["verify-synthetic-data.ts", ".gitleaks.toml"]);
 
 function walk(dir: string, fileList: string[] = []): string[] {

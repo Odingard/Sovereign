@@ -1,0 +1,6 @@
+# Sovereign Marketing Website Robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://sovereignhealth.ai/sitemap.xml
