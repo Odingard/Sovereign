@@ -44,7 +44,10 @@ jobs:
           run_install: false
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile=false
+        # WO-002A S1-01 / G-07: the lockfile is authoritative. A CI run that is
+        # permitted to resolve a different dependency graph than the one reviewed
+        # is not a supply-chain gate.
+        run: pnpm install --frozen-lockfile
 
       - name: Verify Permanent Doctrine Text Presence
         run: |

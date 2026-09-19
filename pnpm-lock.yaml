@@ -150,7 +150,25 @@ importers:
         specifier: ^3.24.2
         version: 3.25.76
 
+  packages/crypto:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../domain
+
   packages/domain: {}
+
+  packages/kernel:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../domain
 
   packages/persistence:
     dependencies:
@@ -170,6 +188,15 @@ importers:
       '@types/pg':
         specifier: ^8.11.11
         version: 8.23.1
+
+  packages/telemetry:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../domain
 
   packages/workflow-runtime:
     dependencies:
