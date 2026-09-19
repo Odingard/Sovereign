@@ -6,6 +6,7 @@ Risk: CRITICAL
 Owner: Identity/authorization lead (named human required)  
 Clinical reviewer: Clinical safety lead (break-glass and emergency-access semantics)  
 Security reviewer: Security lead (named human required)
+Named humans (Founder-assigned, role mapping pending confirmation): Roger, Michael, Mark
 
 ## Objective and rationale
 

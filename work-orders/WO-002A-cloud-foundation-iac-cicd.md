@@ -6,6 +6,7 @@ Risk: CRITICAL
 Owner: Platform engineering lead (named human required)  
 Clinical reviewer: Not required (no clinical semantics); Clinical safety lead informed  
 Security reviewer: Security/privacy lead (named human required)
+Named humans (Founder-assigned, role mapping pending confirmation): Roger, Michael, Mark
 
 ## Objective and rationale
 

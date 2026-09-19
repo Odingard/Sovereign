@@ -1,6 +1,6 @@
 # ADR-0011 — Adoption of the Enterprise SaaS Master Build Plan and Reconciliation of the Stage 1 Foundation Specification
 
-Status: Proposed (Founder acceptance required)
+Status: Accepted (Founder)
 
 ## Context
 
