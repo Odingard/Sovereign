@@ -19,13 +19,13 @@ Founder-led company; sign-off authorities from the master gate matrix are mapped
 
 | Master role | Sovereign holder |
 |---|---|
-| Architecture Review Board (ARB) | Founder + two external reviewers (one healthcare interoperability engineer, one cloud security architect) engaged on retainer; decisions recorded as ADRs with reviewer sign-off |
-| Principal Architect | Founder |
+| Architecture Review Board (ARB) | Andre Byrd (Founder) + Roger (Architect) + Michael (Security); decisions recorded as ADRs with reviewer sign-off |
+| Principal Architect | Andre Byrd (Founder); Roger as independent architecture reviewer |
 | Platform Engineering Lead | Contract developer (build owner) |
 | Product Management & Finance | Founder + fractional CFO/bookkeeper for Gate 2 |
-| CISO | Fractional CISO / vCISO (contract) — required signer for Gate 3; cannot be the founder |
+| CISO | Michael (Security reviewer) — required signer for Gate 3; independent of the founder |
 | VP Engineering & Head of SRE | Founder (VP Eng) + contract developer (SRE) — Gate 4 additionally requires the pen-test vendor's remediation letter and a physician partner's pilot sign-off |
-| Clinical Safety Approver | Physician partner(s) per PRD RG-00/RG-03 |
+| Clinical Safety Approver | Mark (Clinical reviewer), plus physician partner(s) per PRD RG-00/RG-03 |
 
 ---
 

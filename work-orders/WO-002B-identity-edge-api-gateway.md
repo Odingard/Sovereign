@@ -3,10 +3,10 @@
 Status: BLOCKED BY WO-002A (may plan in parallel)  
 Priority: P0  
 Risk: CRITICAL  
-Owner: Identity/authorization lead (named human required)  
-Clinical reviewer: Clinical safety lead (break-glass and emergency-access semantics)  
-Security reviewer: Security lead (named human required)
-Named humans (Founder-assigned, role mapping pending confirmation): Roger, Michael, Mark
+Owner: Andre Byrd (Founder)
+Clinical reviewer: Mark
+Security reviewer: Michael
+Architecture reviewer: Roger
 
 ## Objective and rationale
 
