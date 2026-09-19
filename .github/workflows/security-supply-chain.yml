@@ -1,0 +1,136 @@
+name: Security & Supply Chain Gates
+
+# WO-002A AC-05/06/07. Runs alongside ci.yml. Every job here is intended to become a
+# required check on `main` once branch protection is configured (WO-002A AC-09).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * *" # nightly SCA re-scan of main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  id-token: write # cosign keyless / SLSA
+  attestations: write
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    container: returntocorp/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep (OWASP + Sovereign tenancy rules)
+        run: |
+          semgrep scan \
+            --config p/owasp-top-ten \
+            --config p/typescript \
+            --config .semgrep/ \
+            --error --severity ERROR --severity WARNING \
+            --sarif --output semgrep.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+  sca:
+    name: SCA (pnpm audit + Trivy fs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10.33.0
+          run_install: false
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+      - name: pnpm audit (high+)
+        run: pnpm audit --audit-level=high
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+  iac:
+    name: IaC policy-as-code (Checkov + Conftest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkov (Terraform)
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infra/
+          framework: terraform
+          soft_fail: false
+          quiet: true
+      - name: Conftest (Sovereign infra policies)
+        run: |
+          curl -sSL https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz | tar -xz -C /tmp
+          for env in dev staging prod; do
+            if [ -d "infra/envs/$env" ]; then
+              /tmp/conftest test infra/envs/$env --policy infra/policy --all-namespaces || exit 1
+            fi
+          done
+
+  sbom-provenance:
+    name: SBOM + signed provenance
+    runs-on: ubuntu-latest
+    needs: [sast, sca, iac]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate SBOM (CycloneDX + SPDX)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          artifact-name: sovereign-sbom.cdx.json
+      - uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          artifact-name: sovereign-sbom.spdx.json
+      - name: Attest SBOM provenance
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: "**/sovereign-sbom.*.json"
+
+  dast:
+    name: DAST (ZAP baseline)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve preview target
+        id: target
+        run: |
+          # WO-002A AC-07: replace with the ephemeral preview URL published by deploy-preview.yml.
+          echo "url=${PREVIEW_URL:-}" >> "$GITHUB_OUTPUT"
+        env:
+          PREVIEW_URL: ${{ vars.PREVIEW_URL }}
+      - name: ZAP baseline
+        if: steps.target.outputs.url != ''
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: ${{ steps.target.outputs.url }}
+          fail_action: true
+          cmd_options: "-a -I"
+      - name: No preview target
+        if: steps.target.outputs.url == ''
+        run: echo "::warning::PREVIEW_URL not set; DAST skipped. This is a gap until WO-002A AC-07 lands." && exit 0

@@ -22,3 +22,10 @@ playwright-report/
 .next/
 *.tsbuildinfo
 
+
+# Build outputs (added by WO-002A gap closure)
+.next/
+**/.next/
+*.tsbuildinfo
+.turbo/
+dist/

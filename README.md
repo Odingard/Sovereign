@@ -33,8 +33,9 @@ Progression:
 
 ## Repository map
 
-- `docs/` — constitution, architecture, governance, safety, and ADRs.
-- `work-orders/` — controlled WO-000 through WO-017 build sequence.
+- `docs/` — constitution, architecture, governance, safety, and ADRs. Lifecycle: `docs/ENTERPRISE_BUILD_PLAN.md` (ADR-0011); gap tracking: `docs/GAP_REGISTER.md`; foundation spec: `docs/STAGE1_FOUNDATION_SPEC.md`.
+- `infra/` — Terraform modules, per-environment roots, and Conftest policies (WO-002A).
+- `work-orders/` — controlled WO-000 through WO-017 build sequence, plus WO-002A/B/C foundation work orders.
 - `specs/` — executable contracts and examples for authoritative objects.
 - `apps/` — clinician, operations, and admin experiences.
 - `services/` — provider-independent domain/application services.
