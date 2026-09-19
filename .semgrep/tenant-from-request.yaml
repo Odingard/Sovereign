@@ -7,9 +7,9 @@ rules:
     languages: [typescript, javascript]
     paths:
       exclude:
-        - apps/gateway/**
+        - /apps/gateway/**
         - "**/*.test.ts"
-        - tests/**
+        - /tests/**
     patterns:
       - pattern-either:
           - pattern: $REQ.body.tenant_id
@@ -27,10 +27,10 @@ rules:
     languages: [typescript, javascript]
     paths:
       exclude:
-        - scripts/**
-        - tests/**
+        - /scripts/**
+        - /tests/**
         - "**/*.test.ts"
-        - apps/marketing-site/**
+        - /apps/marketing-site/**
     patterns:
       - pattern-either:
           - pattern: console.log(...)

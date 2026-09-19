@@ -39,3 +39,5 @@ Audit of the repository at the WO-002 GO commit against the immutable master pla
 1. A gap is closed only when its acceptance criterion has committed evidence in the corresponding gate record.
 2. New gaps discovered during any work order are appended here with a WO mapping before the work order can reach GO.
 3. This register is reviewed at every gate.
+| G-30 | GitHub Actions referenced by mutable tags (18 Semgrep findings on first run) | 5 | CLOSED | all `uses:` pinned to commit SHAs in both workflows; Semgrep container pinned | — |
+| G-31 | Conftest policies used pre-OPA-1.0 syntax and did not compile; no negative tests | 1 | CLOSED | `infra/policy/sovereign.rego` rewritten with `import rego.v1`; `infra/policy/tests/` (5 tests) run by `conftest verify` in CI | WO-002A AC-05 |
