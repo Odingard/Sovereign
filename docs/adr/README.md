@@ -12,4 +12,5 @@ ADRs use: Status, Context, Decision, Consequences, Rejected Alternatives, Verifi
 - [ADR-0006 — Local Toolchain and Reference Architecture Stack](file:///Users/dre/dev/Sovereign/docs/adr/ADR-0006-local-stack-and-toolchain-selection.md)
 - [ADR-0007 — Environment Trust Boundaries and PHI Isolation](file:///Users/dre/dev/Sovereign/docs/adr/ADR-0007-environment-trust-boundaries-and-phi-isolation.md)
 - [ADR-0008 — Canonical Aggregate Relational Persistence Shape & JSON Storage Boundaries](file:///Users/dre/dev/Sovereign/docs/adr/ADR-0008-canonical-aggregate-persistence-shape.md)
-
+- ADR-0011 — Adoption of the Enterprise SaaS Master Build Plan and Stage 1 reconciliation (Accepted)
+- ADR-0012 — Identity provider selection: Google Cloud Identity Platform + Keycloak (Accepted)

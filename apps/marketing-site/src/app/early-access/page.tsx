@@ -8,7 +8,12 @@ export const metadata = constructMetadata({
   path: "/early-access",
 });
 
-export default function EarlyAccessPage({ searchParams }: { searchParams?: { program?: string } }) {
+export default async function EarlyAccessPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ program?: string }>;
+}) {
+  const resolvedSearchParams = await searchParams;
   return (
     <>
       <section
@@ -35,7 +40,7 @@ export default function EarlyAccessPage({ searchParams }: { searchParams?: { pro
               or protected health information. No uploads are accepted.
             </div>
           </div>
-          <EarlyAccessForm initialProgram={searchParams?.program} />
+          <EarlyAccessForm initialProgram={resolvedSearchParams?.program} />
           <div className="story-points" style={{ marginTop: "3rem" }}>
             <div className="story-point">
               <span>01</span>

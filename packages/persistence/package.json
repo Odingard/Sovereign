@@ -10,7 +10,7 @@
   "dependencies": {
     "@sovereign/contracts": "workspace:*",
     "@sovereign/domain": "workspace:*",
-    "kysely": "^0.27.5",
+    "kysely": "^0.28.14",
     "pg": "^8.13.1"
   },
   "devDependencies": {

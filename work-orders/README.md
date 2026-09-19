@@ -9,6 +9,9 @@ WO-000 is first and blocking. WO-001 may not start until WO-000 has an approved 
 | 000 | Cloud, Security & PHI Architecture Gate | approved synthetic architecture; explicit PHI decision |
 | 001 | Canonical Domain Model | five authoritative objects/contracts |
 | 002 | Tenancy, Identity & Authority | isolation and authority proof |
+| 002A | Cloud Foundation, IaC & Delivery Pipeline | governed environments and supply-chain gates (ADR-0011) |
+| 002B | Identity Edge, SCIM, Service Auth & API Gateway | authenticated, trusted-tenant HTTP edge (ADR-0011) |
+| 002C | Audit Chain, Encryption, Telemetry, Retention & Metering | tamper-evident audit, per-tenant keys, PHI-safe telemetry (ADR-0011) |
 | 003 | RA Clinical State Model | clinically reviewed state schema |
 | 004 | Evidence & Provenance | traceable executable assertions |
 | 005 | EHR/FHIR Ingestion | one EHR mapped safely |

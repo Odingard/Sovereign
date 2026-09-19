@@ -1,0 +1,38 @@
+rules:
+  - id: sovereign-tenant-from-request-input
+    message: >-
+      Tenant identity must come from verified identity claims only (AGENTS.md §9, §17, §18; ADR-0010).
+      Reading tenant_id/tenantId from request body, query, params, or headers outside apps/gateway is a defect.
+    severity: ERROR
+    languages: [typescript, javascript]
+    paths:
+      exclude:
+        - /apps/gateway/**
+        - "**/*.test.ts"
+        - /tests/**
+    patterns:
+      - pattern-either:
+          - pattern: $REQ.body.tenant_id
+          - pattern: $REQ.body.tenantId
+          - pattern: $REQ.query.tenant_id
+          - pattern: $REQ.query.tenantId
+          - pattern: $REQ.params.tenant_id
+          - pattern: $REQ.params.tenantId
+          - pattern: $REQ.headers["x-tenant-id"]
+          - pattern: $REQ.headers["x-tenant"]
+  - id: sovereign-no-phi-in-logs
+    message: >-
+      Log calls must use the allowlisted structured logger from packages/telemetry (ADR-0007 §5). Direct console logging is prohibited outside scripts/ and tests/.
+    severity: WARNING
+    languages: [typescript, javascript]
+    paths:
+      exclude:
+        - /scripts/**
+        - /tests/**
+        - "**/*.test.ts"
+        - /apps/marketing-site/**
+    patterns:
+      - pattern-either:
+          - pattern: console.log(...)
+          - pattern: console.info(...)
+          - pattern: console.debug(...)
