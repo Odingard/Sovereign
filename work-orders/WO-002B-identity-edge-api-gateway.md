@@ -14,11 +14,11 @@ WO-002 proved the domain model of identity and authority. Nothing yet authentica
 
 ## Dependencies/inputs
 
-WO-002 (GO), WO-002A (environments, secrets, WIF), ADR-0006/0010/0011, `docs/STAGE1_FOUNDATION_SPEC.md` §4–§6 and §7.1/7.4/7.6, IdP vendor promoted at least to `APPROVED FOR SYNTHETIC USE` in the eligibility matrix.
+WO-002 (GO), WO-002A (environments, secrets, WIF), ADR-0006/0010/0011, `docs/STAGE1_FOUNDATION_SPEC.md` §4–§6 and §7.1/7.4/7.6, ADR-0012 (Identity Platform + Keycloak); Identity Platform promoted at least to `APPROVED FOR SYNTHETIC USE` in the eligibility matrix.
 
 ## Scope
 
-- `adapters/identity-oidc`: OIDC/SAML 2.0 federation through the selected IdP (Auth0 Organizations as leading candidate; Keycloak fallback), one IdP organization per Sovereign tenant, custom claims (`tenant_id`, `user_id`, `session_id`, `roles`, `site_ids`, `mfa`), JWKS verification, 15-minute access tokens, rotating refresh with reuse detection, 8-hour absolute session.
+- `adapters/identity-oidc`: OIDC/SAML 2.0 federation through Google Cloud Identity Platform in cloud environments and Keycloak in local dev/CI (ADR-0012), one IdP tenant/realm per Sovereign tenant, custom claims (`tenant_id`, `user_id`, `session_id`, `roles`, `site_ids`, `mfa`), JWKS verification, 15-minute access tokens, rotating refresh with reuse detection, 8-hour absolute session.
 - MFA policy: mandatory for `HUMAN_CLINICIAN`, `HUMAN_ADMIN`, security/auditor roles in all environments.
 - Session revocation: `session_revocation` repository; gateway refresh ≤30 s; user revoke → IdP refresh-token revocation + all sessions dead.
 - `adapters/identity-scim`: SCIM 2.0 `/scim/v2/{Users,Groups,ServiceProviderConfig,Schemas,ResourceTypes}`; per-connection hashed bearer token scoped to one tenant; group→role mapping table; `active=false` → revoke grants and sessions ≤30 s; every SCIM op audited with `actorKind=EXTERNAL_SYSTEM`.
@@ -38,7 +38,7 @@ Patient-facing auth; clinical authorization semantics (unchanged from WO-002); a
 - Authentication success grants no capability; every handler calls the domain `AuthorizationEvaluator` with a server-resolved `ActionDefinition`.
 - AI and service principals cannot obtain human roles, Class C/D grants, or break-glass.
 - All mutating endpoints require `Idempotency-Key`; same key + different body → 409.
-- IdP holds authentication only; roles/grants remain in Sovereign and are fetched by the IdP action at login.
+- IdP holds authentication only; roles/grants remain in Sovereign and are fetched by the blocking function/mapper at login.
 
 ## Safety/security/audit/ports
 
@@ -53,7 +53,7 @@ Missing/invalid/expired/forged JWT (`alg=none`, wrong `aud`/`iss`, future `nbf`)
 - AC-002B-01: OIDC and SAML login produce tokens with all required claims; MFA enforced for privileged roles (evidence: automated tests + screenshots on synthetic tenants).
 - AC-002B-02: Session revocation propagates ≤30 s across gateway instances.
 - AC-002B-03: Token negative-test matrix (≥8 cases) passes.
-- AC-002B-04: SCIM 2.0 conformance round-trip with the IdP's SCIM client; deprovision test passes.
+- AC-002B-04: SCIM 2.0 conformance round-trip with a reference SCIM client (Entra ID or Okta test tenant); deprovision test passes.
 - AC-002B-05: Service-to-service calls require bound ID token + mTLS; HMAC-only rejected.
 - AC-002B-06: Gateway resolves `AuthoritativeSecurityContext` only from claims; Semgrep rule and adversarial tenant-tamper suite pass.
 - AC-002B-07: Idempotency and rate-limit tests pass; integration-health endpoint returns truthful per-dependency state with no secrets/PHI.

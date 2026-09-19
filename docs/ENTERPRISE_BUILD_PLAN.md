@@ -50,7 +50,7 @@ Founder-led company; sign-off authorities from the master gate matrix are mapped
 
 Delivered by `docs/STAGE1_FOUNDATION_SPEC.md` (v1.2, repository-reconciled) through WO-002A (cloud/IaC/CI), WO-002B (identity edge/gateway), WO-002C (audit/crypto/telemetry/retention/metering).
 
-- IdP: adapter behind ADR-0010 ports; Auth0 Organizations is the leading candidate pending eligibility promotion; OIDC/SAML 2.0 enterprise connections (Entra ID, Okta, Ping supported); MFA enforced for privileged roles.
+- IdP: Google Cloud Identity Platform in cloud, Keycloak locally, behind ADR-0010 ports (ADR-0012); OIDC/SAML 2.0 enterprise connections (Entra ID, Okta, Ping); MFA enforced for privileged roles.
 - SCIM 2.0 provisioning/deprovisioning.
 - M2M: Google-signed ID tokens from service identities + mTLS internal ingress.
 - RBAC + ABAC: domain `AuthorizationEvaluator` (ADR-0010), deny-by-default, dual control, break-glass; OPA/Conftest for infrastructure policy-as-code only.

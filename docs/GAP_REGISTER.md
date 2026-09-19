@@ -30,7 +30,7 @@ Audit of the repository at the WO-002 GO commit against the immutable master pla
 | G-24 | Load model, chaos/DR drills, measured RTO/RPO, status page, on-call tiers, PIR template | 6/7 | ABSENT | — | WO-002A AC-11; WO-015 |
 | G-25 | Third-party penetration test engagement | 5 | ABSENT | — | WO-015 / pre-G6 |
 | G-26 | Outbound webhook engine (HMAC, backoff, DLQ) | 4 | ABSENT | outbox exists | WO-014 |
-| G-27 | Service Eligibility Matrix entries for IdP vendor, Sentry, Terraform state backend | 0 | PARTIAL | matrix exists; entries missing | WO-002A AC-12 |
+| G-27 | Service Eligibility Matrix entries for IdP vendor, Sentry, Terraform state backend | 0 | CLOSED | entries added; IdP selected by ADR-0012 | WO-002A AC-12 (promotion review) |
 | G-28 | RLS session variable naming consistency | 2 | CLOSED | gate record corrected to `app.current_tenant` | ADR-0011 erratum |
 | G-29 | Build outputs (`.next/`, `*.tsbuildinfo`) not ignored — untracked build artifacts on the marketing branch | 5 | CLOSED | `.gitignore` updated in the ADR-0011 commit | — |
 
