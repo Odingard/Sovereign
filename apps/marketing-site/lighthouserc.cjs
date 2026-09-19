@@ -1,7 +1,7 @@
 module.exports = {
   ci: {
     collect: {
-      numberOfRuns: 1,
+      numberOfRuns: 3, // median of 3 — single runs on shared CI runners are noisy (0.89 vs 0.9 threshold observed)
       startServerCommand: "pnpm exec next build && pnpm exec next start -p 4173",
       startServerReadyPattern: "Ready in",
       url: ["http://127.0.0.1:4173/"],
