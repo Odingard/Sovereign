@@ -20,13 +20,27 @@
     "@biomejs/biome": "^1.9.4",
     "@types/node": "^20.17.19",
     "@types/pg": "^8.11.11",
-    "kysely": "^0.27.5",
+    "kysely": "^0.28.14",
     "pg": "^8.13.1",
     "@sovereign/domain": "workspace:*",
     "@sovereign/persistence": "workspace:*",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
-    "vitest": "^2.1.8",
+    "vitest": "^3.2.6",
     "zod": "^3.24.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "tmp": ">=0.2.6",
+      "vite": ">=6.4.3",
+      "postcss": ">=8.5.18"
+    },
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-jmr9-qjv8-65gv",
+        "GHSA-7pqw-9j4j-h8q3"
+      ]
+    },
+    "_auditNotes": "ignoreGhsas: extract-zip advisories with no patched version; reachable only via @lhci/cli (Lighthouse, dev-only, marketing-site CI). Re-evaluate each quarter (WO-002A AC-06)."
   }
 }
