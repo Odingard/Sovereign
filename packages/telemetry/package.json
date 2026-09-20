@@ -1,0 +1,14 @@
+{
+  "name": "@sovereign/telemetry",
+  "version": "0.1.0",
+  "description": "Sovereign Telemetry - OpenTelemetry Setup, PHI-Redacting Logger & Metrics (scaffold)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@sovereign/crypto",
+  "version": "0.1.0",
+  "description": "Sovereign Cryptography - Per-Tenant Envelope Encryption, DEK Cache, Hashing & KeyManagementPort (scaffold)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

@@ -14,6 +14,8 @@ import { join } from "node:path";
  *    domain -> EHR vendor
  * 4. AI adapters cannot import state mutation repositories.
  * 5. External execution adapters cannot bypass Execution Graph / authority interfaces.
+ * 6. Stage 1 tier packages (kernel, crypto, telemetry) depend only on contracts/domain
+ *    and must exist (ADR-0011; WO-002A S1-01).
  */
 
 const ROOT = process.cwd();
@@ -158,8 +160,61 @@ function verifyArchitecture(): { passed: boolean; violations: string[] } {
     }
   }
 
+  // 6. Stage 1 tier packages (WO-002A S1-01): kernel, crypto, telemetry.
+  // ADR-0011 §Decision 2: these depend ONLY on contracts/domain. They must never
+  // reach persistence, application, workflow-runtime, audit, or a vendor SDK.
+  // Ports are defined here; vendor implementations live in adapters/providers.
+  const STAGE1_TIER_PACKAGES = ["kernel", "crypto", "telemetry"];
+  const prohibitedTierImports = [
+    "@sovereign/persistence",
+    "@sovereign/application",
+    "@sovereign/workflow-runtime",
+    "@sovereign/audit",
+    "@sovereign/provider-ai",
+    "@google",
+    "@google-cloud",
+    "@google/genai",
+    "gemini",
+    "@temporalio",
+    "temporal",
+    "aws-sdk",
+    "@azure",
+    "kysely",
+    "pg",
+    "@sentry",
+  ];
+
+  for (const pkg of STAGE1_TIER_PACKAGES) {
+    const pkgRoot = join(ROOT, "packages", pkg);
+    const manifest = join(pkgRoot, "package.json");
+    const entrypoint = join(pkgRoot, "src/index.ts");
+
+    // Registration is mandatory: a missing tier package is a violation, not a skip.
+    // A boundary check that silently passes when the target is absent is not a check.
+    if (!existsSync(manifest) || !existsSync(entrypoint)) {
+      violations.push(
+        `[MISSING TIER PACKAGE] packages/${pkg}: required by ADR-0011 and WO-002A S1-01; expected package.json and src/index.ts.`,
+      );
+      continue;
+    }
+
+    for (const file of walkDir(join(pkgRoot, "src"))) {
+      const content = readFileSync(file, "utf-8");
+      for (const badImport of prohibitedTierImports) {
+        if (content.includes(`'${badImport}`) || content.includes(`"${badImport}`)) {
+          violations.push(
+            `[TIER BOUNDARY VIOLATION] ${file.replace(ROOT, "")}: imports '${badImport}'. packages/${pkg} may depend only on @sovereign/contracts and @sovereign/domain (ADR-0011).`,
+          );
+        }
+      }
+    }
+  }
+
   if (violations.length === 0) {
     console.log("✔ All package boundaries verified.");
+    console.log(
+      "✔ Stage 1 tier packages (kernel, crypto, telemetry) present and dependency-clean.",
+    );
     console.log(
       "✔ One-way dependency invariant enforced: providers/adapters -> application -> domain.",
     );

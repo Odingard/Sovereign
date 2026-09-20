@@ -1,0 +1,14 @@
+{
+  "name": "@sovereign/kernel",
+  "version": "0.1.0",
+  "description": "Sovereign Shared Service Kernel - Request Context, Tenant & Capability Guards, Idempotency, Outbox & Audit Emission (scaffold)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}
