@@ -268,8 +268,8 @@ export class DefaultAuthorizationEvaluator implements AuthorizationEvaluator {
         reasonFacts: {
           code: AuthorizationReasonCode.ERR_GRANT_REVOKED,
           grantId: grant.grantId,
-          revokedAt: grant.revocation!.revokedAt,
-          revokedBy: grant.revocation!.revokedByActorId,
+          revokedAt: grant.revocation.revokedAt,
+          revokedBy: grant.revocation.revokedByActorId,
         },
         evaluatedAt: serverNow,
         grantsConsidered,

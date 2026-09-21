@@ -177,7 +177,10 @@ describe("Sovereign PostgreSQL Identity, Authority & RLS Integration Suite", () 
     expect(revokedLoaded?.revocation?.reasonCode).toBe("DOSAGE_SUPERSEDED");
 
     // Single source of truth checks survive persistence
-    expect(computeGrantLifecycleStatus(revokedLoaded!, new Date("2026-06-15T00:00:00Z"))).toBe(
+    if (revokedLoaded === null || revokedLoaded === undefined) {
+      throw new Error("Expected revoked grant to be present");
+    }
+    expect(computeGrantLifecycleStatus(revokedLoaded, new Date("2026-06-15T00:00:00Z"))).toBe(
       AuthorityGrantStatus.REVOKED,
     );
   });

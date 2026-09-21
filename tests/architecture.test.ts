@@ -1,14 +1,14 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { GovernedMutationPipeline } from "../packages/application/src/index.ts";
+import { GovernedMutationPipeline } from "@sovereign/application";
 import {
   AUTHORITATIVE_OBJECT_TYPES,
   AuthorityClass,
   EpistemicStatus,
   LifecycleState,
-} from "../packages/domain/src/index.ts";
-import { FakeAIReasoningProvider } from "../providers/ai-fake/src/index.ts";
+} from "@sovereign/domain";
+import { FakeAIReasoningProvider } from "@sovereign/provider-ai-fake";
+import { describe, expect, it } from "vitest";
 
 describe("Sovereign Architecture & Doctrine Tests", () => {
   it("enforces permanent doctrine: model is not system of record", () => {

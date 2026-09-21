@@ -218,8 +218,8 @@ export async function up(db: Kysely<any>): Promise<void> {
   }
 
   // Append-only for authorization_audit_log (NO UPDATE, NO DELETE granted to sovereign_app)
-  await sql.raw(`REVOKE ALL ON authorization_audit_log FROM sovereign_app;`).execute(db);
-  await sql.raw(`GRANT SELECT, INSERT ON authorization_audit_log TO sovereign_app;`).execute(db);
+  await sql.raw("REVOKE ALL ON authorization_audit_log FROM sovereign_app;").execute(db);
+  await sql.raw("GRANT SELECT, INSERT ON authorization_audit_log TO sovereign_app;").execute(db);
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
