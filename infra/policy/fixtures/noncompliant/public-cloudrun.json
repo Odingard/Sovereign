@@ -7,9 +7,7 @@
       "type": "google_cloud_run_v2_service",
       "mode": "managed",
       "change": {
-        "actions": [
-          "create"
-        ],
+        "actions": ["create"],
         "before": null,
         "after": {
           "name": "sovereign-patient-context",

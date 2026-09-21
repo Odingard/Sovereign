@@ -7,9 +7,7 @@
       "type": "google_storage_bucket",
       "mode": "managed",
       "change": {
-        "actions": [
-          "create"
-        ],
+        "actions": ["create"],
         "before": null,
         "after": {
           "name": "artifacts-dev",
