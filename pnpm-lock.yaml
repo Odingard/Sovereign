@@ -19,6 +19,9 @@ importers:
       '@sovereign/application':
         specifier: workspace:*
         version: link:packages/application
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:packages/contracts
       '@sovereign/domain':
         specifier: workspace:*
         version: link:packages/domain
