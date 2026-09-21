@@ -142,30 +142,22 @@ jobs:
   dast:
     name: DAST (ZAP baseline)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    # G-35: this job previously ran unconditionally and ended `&& exit 0` when no
+    # preview URL existed, so it reported SUCCESS while never scanning anything.
+    # It now does not run at all without a target, and GitHub reports it as SKIPPED
+    # rather than passed. Skipped is honest; a green check for a scan that never
+    # happened is not.
+    #
+    # DAST MUST NOT be added to the required-check set on `main` until AC-002A-07
+    # lands and deploy-preview.yml publishes PREVIEW_URL (G-37): GitHub counts a
+    # skipped required check as SATISFIED (audit A-1), which would recreate the same
+    # false-green this fix removes.
+    if: github.event_name == 'pull_request' && vars.PREVIEW_URL != ''
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Resolve preview target
-        id: target
-        run: |
-          # WO-002A AC-07: replace with the ephemeral preview URL published by deploy-preview.yml.
-          echo "url=${PREVIEW_URL:-}" >> "$GITHUB_OUTPUT"
-        env:
-          PREVIEW_URL: ${{ vars.PREVIEW_URL }}
       - name: ZAP baseline
-        if: steps.target.outputs.url != ''
         uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
         with:
-          target: ${{ steps.target.outputs.url }}
+          target: ${{ vars.PREVIEW_URL }}
           fail_action: true
           cmd_options: "-a -I"
-      # G-35: this step previously ended `&& exit 0`, so the DAST gate reported SUCCESS
-      # on every run while never scanning anything. AC-002A-07 requires DAST on a PR
-      # preview; until deploy-preview.yml publishes PREVIEW_URL (G-37), the truthful
-      # result is failure, not success. This check is deliberately NOT in the required
-      # set on `main` until AC-002A-07 lands.
-      - name: No preview target — DAST did not run
-        if: steps.target.outputs.url == ''
-        run: |
-          echo "::error::PREVIEW_URL is not set, so no DAST scan was performed. AC-002A-07 is unmet (gaps G-35, G-37). This gate reports failure rather than claiming a scan it did not run."
-          exit 1
