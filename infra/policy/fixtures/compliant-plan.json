@@ -1,0 +1,91 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.cloudsql.google_sql_database_instance.main",
+      "type": "google_sql_database_instance",
+      "mode": "managed",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "sovereign-dev-pg",
+          "region": "us-central1",
+          "database_version": "POSTGRES_16",
+          "encryption_key_name": "projects/sovereign-dev/locations/us-central1/keyRings/sovereign-dev-kr/cryptoKeys/db-kek",
+          "settings": [
+            {
+              "tier": "db-custom-2-8192",
+              "ip_configuration": [
+                {
+                  "ipv4_enabled": false,
+                  "private_network": "projects/sovereign-dev/global/networks/sovereign"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "address": "module.gcs.google_storage_bucket.artifacts",
+      "type": "google_storage_bucket",
+      "mode": "managed",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "artifacts-dev",
+          "location": "US",
+          "uniform_bucket_level_access": true,
+          "encryption": [
+            {
+              "default_kms_key_name": "projects/sovereign-dev/locations/us-central1/keyRings/sovereign-dev-kr/cryptoKeys/gcs-kek"
+            }
+          ],
+          "versioning": [
+            {
+              "enabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "address": "module.cloudrun.google_cloud_run_v2_service.hello",
+      "type": "google_cloud_run_v2_service",
+      "mode": "managed",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "sovereign-hello",
+          "location": "us-central1",
+          "ingress": "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+        }
+      }
+    },
+    {
+      "address": "module.iam.google_service_account.runtime",
+      "type": "google_service_account",
+      "mode": "managed",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "account_id": "sovereign-hello",
+          "project": "sovereign-dev"
+        }
+      }
+    }
+  ]
+}
