@@ -1,6 +1,10 @@
 # ADR-0013 — Local-First Stage 1 Sequencing
 
-Status: **Proposed** (requires Founder acceptance; Architecture reviewer Roger)
+Status: **Accepted** (Founder, 2026-09-21)
+
+> Accepted by Andre Byrd (Founder) in working session, choosing to build the shared kernel
+> (S1-04 … S1-07) next rather than wait on cloud funding. Architecture reviewer Roger has **not**
+> reviewed this ADR; see G-44 — review for this period is retrospective by Founder decision.
 
 ## Context
 
