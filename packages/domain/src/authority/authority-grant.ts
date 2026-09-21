@@ -79,7 +79,9 @@ export function computeGrantLifecycleStatus(
   return AuthorityGrantStatus.ACTIVE;
 }
 
-export function isGrantRevoked(grant: AuthorityGrant): boolean {
+export function isGrantRevoked(
+  grant: AuthorityGrant,
+): grant is AuthorityGrant & { readonly revocation: GrantRevocationRecord } {
   return grant.revocation !== undefined;
 }
 

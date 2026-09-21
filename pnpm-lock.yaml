@@ -16,12 +16,18 @@ importers:
       '@biomejs/biome':
         specifier: ^1.9.4
         version: 1.9.4
+      '@sovereign/application':
+        specifier: workspace:*
+        version: link:packages/application
       '@sovereign/domain':
         specifier: workspace:*
         version: link:packages/domain
       '@sovereign/persistence':
         specifier: workspace:*
         version: link:packages/persistence
+      '@sovereign/provider-ai-fake':
+        specifier: workspace:*
+        version: link:providers/ai-fake
       '@types/node':
         specifier: ^20.17.19
         version: 20.19.43

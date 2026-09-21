@@ -49,6 +49,15 @@ jobs:
         # is not a supply-chain gate.
         run: pnpm install --frozen-lockfile
 
+      # WO-002A S1-01 / PR-A2, closing G-33. STAGE1_FOUNDATION_SPEC.md §9.1 requires
+      # `biome check` and `tsc --noEmit` in CI. Both are blocking from this commit on:
+      # a reporting-only gate is not a gate.
+      - name: Lint (Biome)
+        run: pnpm run lint
+
+      - name: Typecheck (tsc --noEmit)
+        run: pnpm run typecheck
+
       - name: Verify Permanent Doctrine Text Presence
         run: |
           grep -rn "Sovereign will never be the doctor" docs/ AGENTS.md README.md

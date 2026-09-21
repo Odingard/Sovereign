@@ -3,6 +3,8 @@ import {
   AuthorityClass,
   ClinicalIntentAggregate,
   ClinicalIntentStage,
+  ConfirmationChannel,
+  type ConfirmationId,
   DataProvenanceOrigin,
   DataSensitivityClassification,
   type EvidenceId,
@@ -208,7 +210,11 @@ describe("Sovereign Clinical Intent vs. Execution Authority Boundaries", () => {
     // Safeguard 4: External attempt does not complete node; structured completion confirmation required
     graph = graph.recordAttempt("NODE-CONSENT" as ExecutionNodeId, {
       attemptId: "ATTEMPT-01" as ExecutionAttemptId,
-      attemptedAt: new Date(),
+      nodeId: "NODE-CONSENT" as ExecutionNodeId,
+      attemptNumber: 1,
+      targetSystem: "CONSENT_PORTAL",
+      // PR-A2 mapping: `attemptedAt` -> `dispatchedAt`.
+      dispatchedAt: new Date(),
       state: ExternalAttemptState.ACCEPTED,
     });
 
@@ -218,10 +224,16 @@ describe("Sovereign Clinical Intent vs. Execution Authority Boundaries", () => {
     // Cannot complete node without verified evidence ID
     expect(() => {
       graph.completeNode("NODE-CONSENT" as ExecutionNodeId, {
-        confirmationId: "CONF-01" as any,
-        confirmedAt: new Date(),
+        confirmationId: "CONF-01" as ConfirmationId,
+        nodeId: "NODE-CONSENT" as ExecutionNodeId,
+        // PR-A2 mapping: `confirmedAt` -> `externalTimestamp`; `channel` and
+        // `confirmationNarrative` are required and had no prior value.
+        externalTimestamp: new Date(),
+        channel: ConfirmationChannel.ELECTRONIC_PORTAL,
+        confirmationNarrative: "Synthetic consent portal acknowledgement.",
         externalReferenceId: "REF-001",
-        verifyingEvidenceId: "" as any,
+        // Intentionally empty: this call must throw on missing verifying evidence.
+        verifyingEvidenceId: "" as EvidenceId,
       });
     }).toThrow(InvariantViolationError);
   });
@@ -312,8 +324,11 @@ describe("Sovereign Clinical Intent vs. Execution Authority Boundaries", () => {
 
     // Node 1 advances and completes
     graph = graph.completeNode("NODE-BENEFIT-CHECK" as ExecutionNodeId, {
-      confirmationId: "CONF-BENEFIT-01" as any,
-      confirmedAt: new Date(),
+      confirmationId: "CONF-BENEFIT-01" as ConfirmationId,
+      nodeId: "NODE-BENEFIT-CHECK" as ExecutionNodeId,
+      externalTimestamp: new Date(),
+      channel: ConfirmationChannel.EDI_TRANSACTION,
+      confirmationNarrative: "Synthetic eligibility response received from clearinghouse.",
       externalReferenceId: "AVAILITY-ELIG-992211",
       verifyingEvidenceId: "EVD-01" as EvidenceId,
     });

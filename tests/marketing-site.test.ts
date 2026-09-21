@@ -459,7 +459,7 @@ describe("WEB-001 Public Marketing Website Test Suite", () => {
 
     it("uses one stable idempotency key across shared repository instances", async () => {
       const durable = new Map<string, string>();
-      const fetcher = async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const fetcher = async (_input: Parameters<typeof fetch>[0], init?: RequestInit) => {
         const key = new Headers(init?.headers).get("Idempotency-Key") || "";
         if (!durable.has(key)) durable.set(key, `REMOTE-${durable.size + 1}`);
         return new Response(JSON.stringify({ leadId: durable.get(key) }), {

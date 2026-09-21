@@ -8,6 +8,8 @@ import {
   ClinicalStateAggregate,
   type ClinicalStateId,
   ConcurrencyConflictError,
+  ConfirmationChannel,
+  type ConfirmationId,
   DataProvenanceOrigin,
   DataSensitivityClassification,
   EpistemicStatus,
@@ -18,6 +20,7 @@ import {
   type ExecutionNodeId,
   ExecutionNodeState,
   ExternalAttemptState,
+  ExtractionLineage,
   GenericTherapyAccessStage,
   IntentActionCategory,
   type IntentId,
@@ -42,6 +45,20 @@ import {
 } from "@sovereign/persistence";
 import type { Kysely } from "kysely";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+/**
+ * PR-A2: narrows a repository lookup to a non-optional aggregate.
+ * Repository `findById` returns `T | null`; these tests then call aggregate methods on
+ * the result. Previously written as `loaded?.method()`, which typechecks to
+ * `T | undefined` and was silently passed into functions requiring `T`. Biome forbids
+ * non-null assertions, so this throws with a named message instead.
+ */
+function required<T>(value: T | null | undefined, name: string): T {
+  if (value === null || value === undefined) {
+    throw new Error(`Expected ${name} to be present`);
+  }
+  return value;
+}
 
 const TEST_DB_URL =
   process.env.SOVEREIGN_DATABASE_URL ||
@@ -132,7 +149,9 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
         sourceLocator: "ehr://notes/encounter-991",
         contentSha256: "1".repeat(64),
         contentMimeType: "text/markdown",
-        extractionLineage: "SYNTHETIC_GENERATION",
+        // PR-A2 mapping: syntheticness is carried by classification.origin
+        // (SYNTHETIC_SIMULATION) below, not by the extraction lineage.
+        extractionLineage: ExtractionLineage.DETERMINISTIC_PARSER,
       },
       standardTemporal,
       {
@@ -143,7 +162,10 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
 
     await evidenceRepo.insert(evidence);
 
-    const loaded = await evidenceRepo.findById(tenantA, "EVD-TEST-001" as EvidenceId);
+    const loaded = required(
+      await evidenceRepo.findById(tenantA, "EVD-TEST-001" as EvidenceId),
+      "evidence EVD-TEST-001",
+    );
     expect(loaded).not.toBeNull();
     expect(loaded?.props.evidenceId).toBe("EVD-TEST-001");
     expect(loaded?.props.aggregateVersion).toBe(1);
@@ -157,7 +179,7 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
     expect(loaded?.props.classification.origin).toBe(DataProvenanceOrigin.SYNTHETIC_SIMULATION);
 
     // Append assessment and save with optimistic locking
-    const assessed = loaded?.appendAssessment(
+    const assessed = loaded.appendAssessment(
       clinicianActor,
       EpistemicStatus.KNOWN,
       "Confirmed synthetic clinical documentation of inflammatory polyarthritis.",
@@ -251,11 +273,14 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
     await intentRepo.insert(intent);
 
     // Transition to ORDERED then AUTHORIZED
-    let loaded = await intentRepo.findById(tenantA, "INTENT-TEST-001" as IntentId);
+    let loaded = required(
+      await intentRepo.findById(tenantA, "INTENT-TEST-001" as IntentId),
+      "intent INTENT-TEST-001",
+    );
     expect(loaded?.props.stage).toBe(ClinicalIntentStage.DECIDED);
     expect(loaded?.props.aggregateVersion).toBe(1);
 
-    const ordered = loaded?.transitionStage(ClinicalIntentStage.ORDERED, clinicianActor);
+    const ordered = loaded.transitionStage(ClinicalIntentStage.ORDERED, clinicianActor);
     const authorized = ordered.transitionStage(
       ClinicalIntentStage.AUTHORIZED,
       clinicianActor,
@@ -264,13 +289,16 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
 
     await intentRepo.updateWithOptimisticLock(authorized, 1);
 
-    loaded = await intentRepo.findById(tenantA, "INTENT-TEST-001" as IntentId);
+    loaded = required(
+      await intentRepo.findById(tenantA, "INTENT-TEST-001" as IntentId),
+      "intent INTENT-TEST-001",
+    );
     expect(loaded?.props.stage).toBe(ClinicalIntentStage.AUTHORIZED);
     expect(loaded?.props.aggregateVersion).toBe(3);
     expect(loaded?.props.authorityReference).toBe("AUTH-PASS-8877");
 
     // Supersede intent
-    const superseded = loaded?.supersede("INTENT-TEST-002" as IntentId, clinicianActor);
+    const superseded = loaded.supersede("INTENT-TEST-002" as IntentId, clinicianActor);
     await intentRepo.updateWithOptimisticLock(superseded, 3);
 
     const reloaded = await intentRepo.findById(tenantA, "INTENT-TEST-001" as IntentId);
@@ -288,7 +316,9 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
 
     graph = graph.addNode({
       nodeId: "NODE-PRIOR-AUTH-SUBMIT" as ExecutionNodeId,
-      nodeType: "SUBMIT_ELECTRONIC_PA",
+      // PR-A2 mapping: `nodeType` -> `actionType`; `authorityClass` is required.
+      actionType: "SUBMIT_ELECTRONIC_PA",
+      authorityClass: AuthorityClass.CLASS_C_CLINICIAN_AUTH,
       state: ExecutionNodeState.READY,
       requiredDependencies: [],
       attempts: [],
@@ -296,15 +326,22 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
 
     await executionRepo.insert(graph);
 
-    const loaded = await executionRepo.findById(tenantA, "GRAPH-TEST-001" as ExecutionGraphId);
+    const loaded = required(
+      await executionRepo.findById(tenantA, "GRAPH-TEST-001" as ExecutionGraphId),
+      "execution graph GRAPH-TEST-001",
+    );
     expect(loaded?.props.aggregateVersion).toBe(2);
 
     // Record an attempt
-    const attemptRecorded = loaded?.recordAttempt("NODE-PRIOR-AUTH-SUBMIT" as ExecutionNodeId, {
+    const attemptRecorded = loaded.recordAttempt("NODE-PRIOR-AUTH-SUBMIT" as ExecutionNodeId, {
       attemptId: "ATTEMPT-01" as ExecutionAttemptId,
-      attemptedAt: new Date(),
+      nodeId: "NODE-PRIOR-AUTH-SUBMIT" as ExecutionNodeId,
+      attemptNumber: 1,
+      // PR-A2 mapping: former `externalTransactionId: "COVERMYMEDS-TX-99001"` has no
+      // field on ExternalExecutionAttempt; the system name is kept as targetSystem.
+      targetSystem: "COVERMYMEDS",
+      dispatchedAt: new Date(),
       state: ExternalAttemptState.ACCEPTED,
-      externalTransactionId: "COVERMYMEDS-TX-99001",
     });
 
     // Node is in-progress, not completed
@@ -316,11 +353,17 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
     const completedGraph = attemptRecorded.completeNode(
       "NODE-PRIOR-AUTH-SUBMIT" as ExecutionNodeId,
       {
-        confirmationId: "CONF-01" as any,
-        confirmedAt: new Date(),
+        confirmationId: "CONF-01" as ConfirmationId,
+        nodeId: "NODE-PRIOR-AUTH-SUBMIT" as ExecutionNodeId,
+        // PR-A2 mapping: `confirmedAt` -> `externalTimestamp`;
+        // `verifyingArtifactHash` -> `confirmationPayloadSha256`; `channel` and
+        // `confirmationNarrative` are required and had no prior value.
+        externalTimestamp: new Date(),
+        channel: ConfirmationChannel.ELECTRONIC_PORTAL,
+        confirmationNarrative: "Synthetic payer portal approval for electronic prior auth.",
         externalReferenceId: "PAYER-AUTH-PA-554433",
         verifyingEvidenceId: "EVD-TEST-001" as EvidenceId,
-        verifyingArtifactHash: "2".repeat(64),
+        confirmationPayloadSha256: "2".repeat(64),
       },
     );
 
@@ -346,14 +389,14 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
 
     await therapyAccessRepo.insert(therapyCase);
 
-    const loaded = await therapyAccessRepo.findById(
-      tenantA,
-      "CASE-TEST-001" as TherapyAccessCaseId,
+    const loaded = required(
+      await therapyAccessRepo.findById(tenantA, "CASE-TEST-001" as TherapyAccessCaseId),
+      "therapy access case CASE-TEST-001",
     );
     expect(loaded?.props.stage).toBe(GenericTherapyAccessStage.CASE_INITIATED);
     expect(loaded?.props.aggregateVersion).toBe(1);
 
-    const advanced = loaded?.advanceStage(
+    const advanced = loaded.advanceStage(
       GenericTherapyAccessStage.ACCESS_AUTHORIZED,
       "EVD-TEST-001" as EvidenceId,
     );
@@ -371,11 +414,14 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
 
   // 6. Optimistic Concurrency Conflict Detection
   it("fails with ConcurrencyConflictError when optimistic concurrency version check fails", async () => {
-    const loaded = await evidenceRepo.findById(tenantA, "EVD-TEST-001" as EvidenceId);
+    const loaded = required(
+      await evidenceRepo.findById(tenantA, "EVD-TEST-001" as EvidenceId),
+      "evidence EVD-TEST-001",
+    );
     expect(loaded).not.toBeNull();
 
     // Mutate state
-    const assessed = loaded?.appendAssessment(
+    const assessed = loaded.appendAssessment(
       clinicianActor,
       EpistemicStatus.KNOWN,
       "Second assessment.",

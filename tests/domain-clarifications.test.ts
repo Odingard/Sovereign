@@ -12,6 +12,7 @@ import {
   DataSensitivityClassification,
   type EvidenceId,
   type ExtensibleActionConcept,
+  ExtractionLineage,
   IntentActionCategory,
   type IntentId,
   type ProvenanceTemporalContext,
@@ -53,7 +54,10 @@ describe("Sovereign WO-001 Mandatory Clarification Tests", () => {
         sourceLocator: "sim://001",
         contentSha256: "d".repeat(64),
         contentMimeType: "text/plain",
-        extractionLineage: "SYNTHETIC_FIXTURE",
+        // PR-A2 mapping: "SYNTHETIC_FIXTURE" is not an ExtractionLineage member, and the
+        // enum has no synthetic option by design — syntheticness is carried by
+        // classification.origin. Deterministic fixture generation is DETERMINISTIC_PARSER.
+        extractionLineage: ExtractionLineage.DETERMINISTIC_PARSER,
       },
       temporal,
       {
@@ -77,7 +81,9 @@ describe("Sovereign WO-001 Mandatory Clarification Tests", () => {
         sourceLocator: "ehr://patient/123/doc/456",
         contentSha256: "e".repeat(64),
         contentMimeType: "text/plain",
-        extractionLineage: "RAW_FHIR_EXTRACT",
+        // PR-A2 mapping: a raw FHIR extract is a machine parse with no AI and no human
+        // keying -> DETERMINISTIC_PARSER.
+        extractionLineage: ExtractionLineage.DETERMINISTIC_PARSER,
       },
       temporal,
       {

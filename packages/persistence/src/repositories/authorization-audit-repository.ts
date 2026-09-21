@@ -13,6 +13,7 @@ import type {
   AuthorizationAuditRecord,
   AuthorizationOutcome,
   AuthorizationReasonCode,
+  AuthorizationReasonFacts,
   CapabilityIdentifier,
   CausationId,
   CorrelationId,
