@@ -1,0 +1,21 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.gcs.google_storage_bucket.artifacts",
+      "type": "google_storage_bucket",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "artifacts-dev",
+          "location": "US",
+          "uniform_bucket_level_access": true,
+          "encryption": []
+        }
+      }
+    }
+  ]
+}

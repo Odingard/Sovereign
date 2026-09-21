@@ -79,21 +79,48 @@ jobs:
           framework: terraform
           soft_fail: false
           quiet: true
-      - name: Conftest (Sovereign infra policies)
+      - name: Install Conftest
+        run: curl -sSL https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz | tar -xz -C /tmp
+
+      - name: Conftest — Rego unit tests
+        run: /tmp/conftest verify --policy infra/policy
+
+      # G-34: every rule reads `input.resource_changes`, which exists only in
+      # `terraform show -json <plan>` output. The previous step ran conftest against
+      # `infra/envs/*` .tf SOURCE, so no rule could ever match and the gate exited 0 —
+      # a policy gate that structurally could not fail. Fixtures are plan JSON.
+      - name: Conftest — compliant plan must PASS
+        run: /tmp/conftest test infra/policy/fixtures/compliant-plan.json --policy infra/policy --all-namespaces
+
+      # AC-002A-05: "Conftest/Checkov gates fail a deliberately non-compliant plan."
+      # The inverted exit code is the point. A gate that cannot fail is not a gate.
+      - name: Conftest — every non-compliant plan must FAIL
         run: |
-          curl -sSL https://github.com/open-policy-agent/conftest/releases/download/v0.56.0/conftest_0.56.0_Linux_x86_64.tar.gz | tar -xz -C /tmp
-          /tmp/conftest verify --policy infra/policy
-          for env in dev staging prod; do
-            if [ -d "infra/envs/$env" ]; then
-              /tmp/conftest test infra/envs/$env --policy infra/policy --all-namespaces || exit 1
+          status=0
+          for f in infra/policy/fixtures/noncompliant/*.json; do
+            if /tmp/conftest test "$f" --policy infra/policy --all-namespaces >/dev/null 2>&1; then
+              echo "::error file=$f::NEGATIVE TEST FAILED TO FAIL — this non-compliant plan was accepted by policy"
+              status=1
+            else
+              echo "ok — correctly denied: $f"
             fi
           done
+          exit $status
 
   sbom-provenance:
     name: SBOM + signed provenance
     runs-on: ubuntu-latest
     needs: [sast, sca, iac]
+    # G-36 / audit A-1: GitHub treats a SKIPPED required check as SATISFIED for branch
+    # protection. With a bare `needs:`, any upstream gate failure silently satisfied
+    # this one. Run always and fail explicitly instead.
+    if: always()
     steps:
+      - name: Refuse to sign unscanned code
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "::error::Upstream security gate did not pass (sast=${{ needs.sast.result }}, sca=${{ needs.sca.result }}, iac=${{ needs.iac.result }}). Refusing to emit an SBOM or provenance attestation for unscanned code."
+          exit 1
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Generate SBOM (CycloneDX + SPDX)
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
@@ -115,23 +142,22 @@ jobs:
   dast:
     name: DAST (ZAP baseline)
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    # G-35: this job previously ran unconditionally and ended `&& exit 0` when no
+    # preview URL existed, so it reported SUCCESS while never scanning anything.
+    # It now does not run at all without a target, and GitHub reports it as SKIPPED
+    # rather than passed. Skipped is honest; a green check for a scan that never
+    # happened is not.
+    #
+    # DAST MUST NOT be added to the required-check set on `main` until AC-002A-07
+    # lands and deploy-preview.yml publishes PREVIEW_URL (G-37): GitHub counts a
+    # skipped required check as SATISFIED (audit A-1), which would recreate the same
+    # false-green this fix removes.
+    if: github.event_name == 'pull_request' && vars.PREVIEW_URL != ''
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Resolve preview target
-        id: target
-        run: |
-          # WO-002A AC-07: replace with the ephemeral preview URL published by deploy-preview.yml.
-          echo "url=${PREVIEW_URL:-}" >> "$GITHUB_OUTPUT"
-        env:
-          PREVIEW_URL: ${{ vars.PREVIEW_URL }}
       - name: ZAP baseline
-        if: steps.target.outputs.url != ''
         uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
         with:
-          target: ${{ steps.target.outputs.url }}
+          target: ${{ vars.PREVIEW_URL }}
           fail_action: true
           cmd_options: "-a -I"
-      - name: No preview target
-        if: steps.target.outputs.url == ''
-        run: echo "::warning::PREVIEW_URL not set; DAST skipped. This is a gap until WO-002A AC-07 lands." && exit 0

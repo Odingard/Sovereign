@@ -1,0 +1,28 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.cloudsql.google_sql_database_instance.main",
+      "type": "google_sql_database_instance",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "sovereign-dev-pg",
+          "region": "us-central1",
+          "settings": [
+            {
+              "ip_configuration": [
+                {
+                  "ipv4_enabled": false
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
