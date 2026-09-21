@@ -1,6 +1,11 @@
 import { AuthorityClass, EpistemicStatus, LifecycleState } from "@sovereign/domain";
 import { z } from "zod";
 
+// WO-002C S1-04 — platform kernel contracts.
+export * from "./request-context.js";
+export * from "./audit-event.js";
+export * from "./log-fields.js";
+
 /**
  * AI Reasoning Provider Port (ADR-0001, ADR-0006)
  * AI models are untrusted reasoning components. Outputs are candidates only.
