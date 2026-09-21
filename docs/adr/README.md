@@ -14,3 +14,4 @@ ADRs use: Status, Context, Decision, Consequences, Rejected Alternatives, Verifi
 - [ADR-0008 — Canonical Aggregate Relational Persistence Shape & JSON Storage Boundaries](file:///Users/dre/dev/Sovereign/docs/adr/ADR-0008-canonical-aggregate-persistence-shape.md)
 - ADR-0011 — Adoption of the Enterprise SaaS Master Build Plan and Stage 1 reconciliation (Accepted)
 - ADR-0012 — Identity provider selection: Google Cloud Identity Platform + Keycloak (Accepted)
+- ADR-0013 — Local-First Stage 1 Sequencing (Proposed)
