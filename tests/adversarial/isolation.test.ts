@@ -24,7 +24,11 @@ import { decryptField, encryptField } from "@sovereign/crypto";
 import {
   ActorKind,
   AuthorizationOutcome,
+  BREAK_GLASS_MAX_DURATION_MS,
+  BreakGlassRefusal,
   capabilitiesForRole,
+  evaluateBreakGlassRequest,
+  mayReadUnderBreakGlass,
   requiresMfa,
 } from "@sovereign/domain";
 import type {
@@ -35,6 +39,7 @@ import type {
 import { IntegrationHealthTracker, TenantRateLimiter, buildGateway } from "@sovereign/gateway";
 import {
   ErrorCode,
+  type SiteScope,
   type SovereignError,
   checkIdempotency,
   requireCapability,
@@ -108,6 +113,9 @@ const requestFor = (targetTenant: string): AuthorizationRequest => ({
   },
 });
 
+/** A resource that is not site-scoped. The site check is a no-op for these. */
+const TENANT_WIDE: SiteScope = { grantedSiteIds: [], resourceSiteId: null };
+
 beforeAll(async () => {
   const pair = await generateKeyPair("RS256");
   privateKey = pair.privateKey;
@@ -129,6 +137,10 @@ beforeAll(async () => {
   app.get("/v1/echo", async (request) => ({
     seenContext: request.headers[SIGNED_CONTEXT_HEADER.toLowerCase()],
     seenTenantHeader: request.headers["x-tenant-id"],
+    // Echoed so §10.24 can assert on the actor kind the GATEWAY derived, rather than
+    // on what a helper returns when called directly. Test-only route.
+    derivedActorKind: request.sovereignContext?.actorKind,
+    derivedTenantId: request.sovereignContext?.tenantId,
   }));
   await app.ready();
 });
@@ -146,6 +158,7 @@ describe("§10.1 cross-tenant read returns 404, never 403", () => {
         evaluator(AuthorizationOutcome.PERMIT),
         requestFor(TENANT_B),
         TENANT_A,
+        TENANT_WIDE,
       );
       throw new Error("expected refusal");
     } catch (error) {
@@ -162,7 +175,9 @@ describe("§10.1 cross-tenant read returns 404, never 403", () => {
         return { outcome: AuthorizationOutcome.PERMIT } as unknown as AuthorizationDecision;
       },
     };
-    await expect(requireCapability(spy, requestFor(TENANT_B), TENANT_A)).rejects.toThrow();
+    await expect(
+      requireCapability(spy, requestFor(TENANT_B), TENANT_A, TENANT_WIDE),
+    ).rejects.toThrow();
     expect(called).toBe(false);
   });
 });
@@ -304,6 +319,89 @@ describe("§10.6 role matrix sweep", () => {
   });
 });
 
+describe("§10.7 a user granted one site cannot reach another site's patient", () => {
+  const evaluatorThatWouldPermit = evaluator(AuthorizationOutcome.PERMIT);
+
+  function scoped(granted: string[], resourceSite: string | null): SiteScope {
+    return { grantedSiteIds: granted, resourceSiteId: resourceSite };
+  }
+
+  it("returns 404, not 403, for a patient at a site the caller was not granted", async () => {
+    // Within a tenant, a 403 confirms that a patient is being seen at another of the
+    // organisation's clinics. That is itself a disclosure, so the answer is the same
+    // one a non-existent patient gets.
+    await expect(
+      requireCapability(
+        evaluatorThatWouldPermit,
+        requestFor(TENANT_A),
+        TENANT_A,
+        scoped(["SITE-X"], "SITE-Y"),
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+  });
+
+  it("refuses before the evaluator runs", async () => {
+    let called = false;
+    const spy: AuthorizationEvaluator = {
+      evaluate: async () => {
+        called = true;
+        return { outcome: AuthorizationOutcome.PERMIT } as unknown as AuthorizationDecision;
+      },
+    };
+    await expect(
+      requireCapability(spy, requestFor(TENANT_A), TENANT_A, scoped(["SITE-X"], "SITE-Y")),
+    ).rejects.toThrow();
+    expect(called).toBe(false);
+  });
+
+  it("permits the caller's own site", async () => {
+    const decision = await requireCapability(
+      evaluatorThatWouldPermit,
+      requestFor(TENANT_A),
+      TENANT_A,
+      scoped(["SITE-X", "SITE-Y"], "SITE-Y"),
+    );
+    expect(decision.permitted).toBe(true);
+  });
+
+  it("treats no granted sites as no access, never as every site", async () => {
+    // Breadth of access is granted, never inferred from the absence of a restriction
+    // (AGENTS.md doctrine 17). A user who works across a whole tenant is given every
+    // site explicitly — a statement somebody made, rather than a silence somebody read.
+    await expect(
+      requireCapability(
+        evaluatorThatWouldPermit,
+        requestFor(TENANT_A),
+        TENANT_A,
+        scoped([], "SITE-X"),
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+  });
+
+  it("leaves a genuinely tenant-wide resource alone", async () => {
+    const decision = await requireCapability(
+      evaluatorThatWouldPermit,
+      requestFor(TENANT_A),
+      TENANT_A,
+      scoped([], null),
+    );
+    expect(decision.permitted).toBe(true);
+  });
+
+  it("checks the tenant before the site, so a cross-tenant call cannot be masked", async () => {
+    // Granting the caller the target's site must not make another tenant's resource
+    // reachable. Both refuse, and the tenant check is the one that fires.
+    await expect(
+      requireCapability(
+        evaluatorThatWouldPermit,
+        requestFor(TENANT_B),
+        TENANT_A,
+        scoped(["SITE-X"], "SITE-X"),
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+  });
+});
+
 describe("§10.8 privileged capabilities require MFA", () => {
   it("requires MFA for every privileged capability", () => {
     for (const capability of [
@@ -378,6 +476,146 @@ describe("§10.13 no PHI reaches logs", () => {
       expect(output, `leaked ${field}`).not.toContain(value);
     }
     expect(output).toContain(TENANT_A);
+  });
+});
+
+describe("§10.15 break-glass is loud, narrow and time-boxed", () => {
+  const NOW_BG = new Date("2026-09-22T03:00:00Z");
+  const GOOD_REASON = "Unresponsive patient in ED, treating team needs allergy history";
+
+  function request(over: Record<string, unknown> = {}) {
+    return {
+      tenantId: TENANT_A,
+      requestedByActorId: "USER-SYN-SUPPORT",
+      requestedByActorKind: ActorKind.HUMAN_STAFF,
+      reason: GOOD_REASON,
+      requestedDurationMs: 60 * 60 * 1000,
+      approverActorIds: ["USER-SYN-APPROVER-1", "USER-SYN-APPROVER-2"],
+      ...over,
+    };
+  }
+
+  it("gives support_readonly no PHI access by default", () => {
+    // The deny half. Break-glass is a grant, never a role default (§6.3).
+    expect(capabilitiesForRole("support_readonly")).toEqual([]);
+  });
+
+  it("refuses an AI principal outright", () => {
+    // No configuration, no emergency and no approval makes this permissible. The
+    // check runs FIRST so an AI principal is never merely a caller that failed some
+    // other check — that would be one bug away from a caller that passed them.
+    for (const kind of [ActorKind.AI_AGENT_RUNTIME, ActorKind.SOVEREIGN_SERVICE]) {
+      const result = evaluateBreakGlassRequest(request({ requestedByActorKind: kind }), NOW_BG);
+      expect(result).toEqual({ granted: false, refusal: BreakGlassRefusal.AI_PRINCIPAL });
+    }
+  });
+
+  it("refuses an AI principal even with perfect approvals and reason", () => {
+    const result = evaluateBreakGlassRequest(
+      request({
+        requestedByActorKind: ActorKind.AI_AGENT_RUNTIME,
+        approverActorIds: ["USER-SYN-1", "USER-SYN-2", "USER-SYN-3"],
+      }),
+      NOW_BG,
+    );
+    expect(result).toEqual({ granted: false, refusal: BreakGlassRefusal.AI_PRINCIPAL });
+  });
+
+  it("refuses a requester who approved their own emergency", () => {
+    const result = evaluateBreakGlassRequest(
+      request({ approverActorIds: ["USER-SYN-SUPPORT", "USER-SYN-APPROVER-1"] }),
+      NOW_BG,
+    );
+    expect(result).toEqual({ granted: false, refusal: BreakGlassRefusal.SELF_APPROVAL });
+  });
+
+  it("refuses one approver, and the same approver twice", () => {
+    expect(
+      evaluateBreakGlassRequest(request({ approverActorIds: ["USER-SYN-1"] }), NOW_BG),
+    ).toEqual({ granted: false, refusal: BreakGlassRefusal.INSUFFICIENT_APPROVALS });
+    expect(
+      evaluateBreakGlassRequest(
+        request({ approverActorIds: ["USER-SYN-1", "USER-SYN-1"] }),
+        NOW_BG,
+      ),
+    ).toEqual({ granted: false, refusal: BreakGlassRefusal.INSUFFICIENT_APPROVALS });
+  });
+
+  it("refuses a blank or token reason", () => {
+    // Every read under the grant is audited with this reason. A blank one makes that
+    // trail worthless at the only moment it is ever read.
+    for (const reason of ["", "   ", "urgent", "need access"]) {
+      expect(evaluateBreakGlassRequest(request({ reason }), NOW_BG)).toEqual({
+        granted: false,
+        refusal: BreakGlassRefusal.REASON_MISSING,
+      });
+    }
+  });
+
+  it("refuses a window longer than four hours rather than clamping it", () => {
+    // A caller who asked for 24 hours and was quietly given 4 will plan around 24 and
+    // be surprised in the middle of whatever the emergency was.
+    const result = evaluateBreakGlassRequest(
+      request({ requestedDurationMs: BREAK_GLASS_MAX_DURATION_MS + 1 }),
+      NOW_BG,
+    );
+    expect(result).toEqual({
+      granted: false,
+      refusal: BreakGlassRefusal.DURATION_EXCEEDS_MAXIMUM,
+    });
+  });
+
+  it("grants a well-formed emergency and fires an alert naming both approvers", () => {
+    const result = evaluateBreakGlassRequest(request(), NOW_BG);
+    expect(result.granted).toBe(true);
+    if (!result.granted) {
+      return;
+    }
+    expect(result.expiresAt).toEqual(new Date("2026-09-22T04:00:00Z"));
+    expect(result.alert.approvedBy).toEqual(["USER-SYN-APPROVER-1", "USER-SYN-APPROVER-2"]);
+    expect(result.alert.tenantId).toBe(TENANT_A);
+  });
+
+  it("carries no clinical content in the alert", () => {
+    // The alert goes to an on-call channel. It says who, when and for how long — an
+    // identifier is not content, and the reason text is not repeated here.
+    const result = evaluateBreakGlassRequest(request(), NOW_BG);
+    expect(result.granted).toBe(true);
+    if (!result.granted) {
+      return;
+    }
+    expect(JSON.stringify(result.alert)).not.toContain("allergy");
+    expect(JSON.stringify(result.alert)).not.toContain(GOOD_REASON);
+  });
+
+  it("stops allowing reads the moment the window closes", () => {
+    // Expiry is checked at use, not by a cleanup job that might not have run.
+    const grant = { expiresAt: new Date("2026-09-22T04:00:00Z") };
+    expect(mayReadUnderBreakGlass(grant, NOW_BG, GOOD_REASON)).toBe(true);
+    expect(mayReadUnderBreakGlass(grant, new Date("2026-09-22T04:00:00Z"), GOOD_REASON)).toBe(
+      false,
+    );
+    expect(mayReadUnderBreakGlass(grant, new Date("2026-09-22T05:00:00Z"), GOOD_REASON)).toBe(
+      false,
+    );
+  });
+
+  it("stops allowing reads the moment the grant is revoked", () => {
+    const grant = {
+      expiresAt: new Date("2026-09-22T04:00:00Z"),
+      revokedAt: new Date("2026-09-22T03:10:00Z"),
+    };
+    expect(mayReadUnderBreakGlass(grant, new Date("2026-09-22T03:20:00Z"), GOOD_REASON)).toBe(
+      false,
+    );
+  });
+
+  it("requires a reason on every read, not only on the grant", () => {
+    // One reason given four hours ago does not explain what somebody is looking at
+    // now.
+    const grant = { expiresAt: new Date("2026-09-22T04:00:00Z") };
+    expect(mayReadUnderBreakGlass(grant, NOW_BG, "")).toBe(false);
+    expect(mayReadUnderBreakGlass(grant, NOW_BG, "looking")).toBe(false);
   });
 });
 
@@ -512,6 +750,32 @@ describe("§10.24 an AI principal cannot reach Class C or D", () => {
       const kind = actorKindForRoles(roles);
       expect(kind).not.toBe(ActorKind.AI_AGENT_RUNTIME);
       expect(kind).not.toBe(ActorKind.SOVEREIGN_SERVICE);
+    }
+  });
+
+  it("is not obtainable by forging the claim, through the HTTP edge", async () => {
+    // The end-to-end half the spec actually asks for: "WO-002 invariant preserved
+    // end-to-end through the HTTP edge". The two assertions below call helpers
+    // directly, which proves the helpers and not the wire — the same shape as G-60,
+    // where every gateway refusal was a 500 for months while a guard test passed.
+    //
+    // The attack: put the actor kind in the token and hope something reads it. The
+    // gateway DERIVES kind from roles and never reads a claim for it, so the forged
+    // value has nowhere to land.
+    for (const forged of [ActorKind.AI_AGENT_RUNTIME, ActorKind.SOVEREIGN_SERVICE]) {
+      const token = await tokenFor(TENANT_A, {
+        actorKind: forged,
+        actor_kind: forged,
+        [SovereignClaims.ROLES]: ["clinician"],
+      });
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/echo",
+        headers: { authorization: `Bearer ${token}` },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json().derivedActorKind).toBe(ActorKind.HUMAN_CLINICIAN);
+      expect(response.json().derivedTenantId).toBe(TENANT_A);
     }
   });
 

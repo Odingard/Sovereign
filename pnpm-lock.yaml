@@ -58,6 +58,9 @@ importers:
       '@sovereign/service-audit':
         specifier: workspace:*
         version: link:services/audit
+      '@sovereign/service-identity':
+        specifier: workspace:*
+        version: link:services/identity
       '@sovereign/service-metering':
         specifier: workspace:*
         version: link:services/metering
@@ -410,6 +413,24 @@ importers:
       '@sovereign/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@sovereign/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
+      kysely:
+        specifier: ^0.28.14
+        version: 0.28.17
+
+  services/identity:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@sovereign/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
       kysely:
         specifier: ^0.28.14
         version: 0.28.17

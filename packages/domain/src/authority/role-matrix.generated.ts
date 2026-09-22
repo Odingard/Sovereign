@@ -76,6 +76,8 @@ const RAW_ROLE_MATRIX = {
     capabilities: [
       "admin:tenant_manage",
       "admin:audit_read",
+      "audit:query",
+      "audit:verify",
       "authority_grant:issue_class_c",
       "authority_grant:revoke",
       "policy:configure_class_b",
@@ -83,7 +85,7 @@ const RAW_ROLE_MATRIX = {
   },
   auditor: {
     enabled: true,
-    capabilities: ["admin:audit_read"],
+    capabilities: ["admin:audit_read", "audit:query", "audit:verify", "audit:export"],
   },
   support_readonly: {
     enabled: true,
@@ -103,6 +105,7 @@ export const DUAL_CONTROL_CAPABILITIES: ReadonlyArray<CapabilityIdentifier> = [
   "authority_grant:issue_class_c",
   "authority_grant:revoke",
   "policy:configure_class_b",
+  "audit:export",
 ] as unknown as ReadonlyArray<CapabilityIdentifier>;
 
 /** Capabilities requiring an MFA claim in the request context (spec §6.2). */
@@ -114,6 +117,9 @@ export const MFA_REQUIRED_CAPABILITIES: ReadonlyArray<CapabilityIdentifier> = [
   "policy:configure_class_b",
   "order:sign_transaction",
   "prior_auth:authorize_submission",
+  "audit:query",
+  "audit:export",
+  "audit:verify",
 ] as unknown as ReadonlyArray<CapabilityIdentifier>;
 
 export function capabilitiesForRole(role: string): ReadonlyArray<CapabilityIdentifier> {

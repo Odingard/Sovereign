@@ -10,6 +10,7 @@ import {
   type IdempotencyStore,
   type KillSwitchRegistry,
   type OutboxPort,
+  type SiteScope,
   type SovereignError,
   type TenantTransactionPort,
   checkIdempotency,
@@ -167,12 +168,16 @@ function requestFor(targetTenant: string): AuthorizationRequest {
   };
 }
 
+/** A resource that is not site-scoped. The site check is a no-op for these. */
+const TENANT_WIDE: SiteScope = { grantedSiteIds: [], resourceSiteId: null };
+
 describe("capability guard (S1-06)", () => {
   it("permits when the evaluator permits", async () => {
     const decision = await requireCapability(
       evaluatorReturning(AuthorizationOutcome.PERMIT),
       requestFor("TENANT-SYN-A"),
       "TENANT-SYN-A",
+      TENANT_WIDE,
     );
     expect(decision.permitted).toBe(true);
   });
@@ -185,6 +190,7 @@ describe("capability guard (S1-06)", () => {
           evaluatorReturning(AuthorizationOutcome.PERMIT),
           requestFor("TENANT-SYN-B"),
           "TENANT-SYN-A",
+          TENANT_WIDE,
         ),
       ),
     ).toBe(ErrorCode.NOT_FOUND);
@@ -201,7 +207,7 @@ describe("capability guard (S1-06)", () => {
       },
     };
     await expect(
-      requireCapability(evaluator, requestFor("TENANT-SYN-B"), "TENANT-SYN-A"),
+      requireCapability(evaluator, requestFor("TENANT-SYN-B"), "TENANT-SYN-A", TENANT_WIDE),
     ).rejects.toThrow();
     expect(evaluatorCalled).toBe(false);
   });
@@ -220,6 +226,7 @@ describe("capability guard (S1-06)", () => {
             evaluatorReturning(outcome),
             requestFor("TENANT-SYN-A"),
             "TENANT-SYN-A",
+            TENANT_WIDE,
           ),
         ),
       ).toBe(ErrorCode.FORBIDDEN);
@@ -428,6 +435,7 @@ describe("error taxonomy (S1-06)", () => {
         evaluatorReturning(AuthorizationOutcome.DENY),
         requestFor("TENANT-SYN-A"),
         "TENANT-SYN-A",
+        TENANT_WIDE,
       );
     } catch (error) {
       const wire = (error as SovereignError).toWireResponse();
@@ -443,6 +451,7 @@ describe("error taxonomy (S1-06)", () => {
           evaluatorReturning(AuthorizationOutcome.DENY),
           requestFor("TENANT-SYN-A"),
           "TENANT-SYN-A",
+          TENANT_WIDE,
         ),
         403,
       ],
@@ -451,6 +460,7 @@ describe("error taxonomy (S1-06)", () => {
           evaluatorReturning(AuthorizationOutcome.PERMIT),
           requestFor("TENANT-SYN-B"),
           "TENANT-SYN-A",
+          TENANT_WIDE,
         ),
         404,
       ],

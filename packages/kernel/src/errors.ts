@@ -61,6 +61,19 @@ export const idempotencyKeyReused = (why: string) =>
   new SovereignError(ErrorCode.IDEMPOTENCY_KEY_REUSED, 409, why);
 
 /**
+ * A dual-control action was attempted without two distinct approvers.
+ *
+ * 409, per spec §10.9: "Dual control: same user requests and approves → 409." Not 400
+ * — the request is well formed. Not 403 either, which was the first choice here and
+ * was wrong: 403 says the caller may not do this, when in fact they may, once somebody
+ * else agrees. 409 says the request conflicts with the current state of the approval,
+ * which is exactly what has happened and is what tells the caller to go and get a
+ * second person rather than to give up.
+ */
+export const dualControlRequired = (why: string) =>
+  new SovereignError(ErrorCode.DUAL_CONTROL_REQUIRED, 409, why);
+
+/**
  * A cross-tenant reference is reported as 404, never 403.
  *
  * Spec §10 test 1: "Token of tenant A requests every resource ID belonging to B →

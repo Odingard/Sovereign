@@ -60,8 +60,15 @@ export async function appendToChain(trx: Db, raw: AuditEventInput): Promise<Chai
   // writers serialise.
   await sql`SELECT pg_advisory_xact_lock(hashtext(${event.tenantId}))`.execute(trx);
 
+  // The tenant predicate is not redundant with `event_id`, even though `event_id` is
+  // unique. The emitter CHOOSES the event id, so without it a caller who replays
+  // another tenant's event id gets `duplicate: true` and their own audit row is
+  // silently never written — an event that did happen, recorded nowhere. Found by
+  // `verify-tenant-predicates.ts` on the first run after it learned to read raw `sql`
+  // (G-55), which is the whole argument for teaching it.
   const existing = await sql<{ seq: string; prev_hash: Buffer; event_hash: Buffer }>`
-    SELECT seq, prev_hash, event_hash FROM clinical_audit_event WHERE event_id = ${event.eventId}
+    SELECT seq, prev_hash, event_hash FROM clinical_audit_event
+    WHERE tenant_id = ${event.tenantId} AND event_id = ${event.eventId}
   `.execute(trx);
 
   const already = existing.rows[0];

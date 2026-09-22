@@ -24,6 +24,9 @@ dual_control:
   - authority_grant:issue_class_c
   - authority_grant:revoke
   - policy:configure_class_b
+  # An export is the largest single disclosure the platform can produce: who accessed
+  # which patient, over a date range, in a file that leaves it (spec §7.3).
+  - audit:export
 
 # Capabilities that require an MFA claim in the request context (spec §6.2).
 requires_mfa:
@@ -34,6 +37,9 @@ requires_mfa:
   - policy:configure_class_b
   - order:sign_transaction
   - prior_auth:authorize_submission
+  - audit:query
+  - audit:export
+  - audit:verify
 
 roles:
   clinician:
@@ -97,14 +103,23 @@ roles:
     capabilities:
       - admin:tenant_manage
       - admin:audit_read
+      - audit:query
+      - audit:verify
       - authority_grant:issue_class_c
       - authority_grant:revoke
       - policy:configure_class_b
 
   auditor:
-    description: Read-only audit access. Deliberately holds no capability that changes state.
+    description: >
+      Read-only audit access. Deliberately holds no capability that changes state.
+      The only role eligible for audit:export — an export is the auditor's deliverable,
+      and keeping it away from security_admin means the person who administers the
+      system cannot also be the one who walks out with its access history.
     capabilities:
       - admin:audit_read
+      - audit:query
+      - audit:verify
+      - audit:export
 
   support_readonly:
     description: >

@@ -12,3 +12,4 @@ export * from "./rate-limit.js";
 export * from "./security-headers.js";
 export * from "./health.js";
 export * from "./app.js";
+export * from "./audit-routes.js";

@@ -21,6 +21,21 @@ export const CanonicalCapabilities = {
   // Administrative Capabilities (Class A)
   ADMIN_TENANT_MANAGE: createCapabilityIdentifier("admin:tenant_manage"),
   ADMIN_AUDIT_READ: createCapabilityIdentifier("admin:audit_read"),
+
+  // Clinical audit chain (spec §7.3). Deliberately SEPARATE from admin:audit_read,
+  // which covers `authorization_audit_log` — the record of what the evaluator
+  // decided. These three cover `clinical_audit_event`, the record of who touched
+  // which patient. They are different tables answering different questions, and
+  // somebody reviewing authorization decisions has no business reading the clinical
+  // access history as a side effect.
+  //
+  // Split three ways rather than one, because the risks are not equal: querying
+  // returns a page, verifying returns a boolean, and exporting produces a file that
+  // leaves the platform. Collapsing them would mean anyone who can read the log can
+  // also walk out with it.
+  AUDIT_QUERY: createCapabilityIdentifier("audit:query"),
+  AUDIT_EXPORT: createCapabilityIdentifier("audit:export"),
+  AUDIT_VERIFY: createCapabilityIdentifier("audit:verify"),
   STAFF_SCHEDULE_MANAGE: createCapabilityIdentifier("staff:schedule_manage"),
 
   // Clinical Informational & Preparation Capabilities (Class A)

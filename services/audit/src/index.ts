@@ -6,4 +6,7 @@
  */
 
 export * from "./chain.js";
+export * from "./consumer.js";
+export * from "./query.js";
+export * from "./export.js";
 export * from "./verify.js";
