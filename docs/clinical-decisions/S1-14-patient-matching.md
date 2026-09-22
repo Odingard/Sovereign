@@ -2,7 +2,7 @@
 
 **For:** Mark (Clinical reviewer)
 **From:** Andre Byrd (Founder), WO-002B/S1-14
-**Status:** OPEN — questions 1, 4, 5 and 6 block implementation
+**Status:** ANSWERED 2026-09-22 — all four blocking questions decided. S1-14 is unblocked. Questions 5, 6 and 7 remain open but are configuration and do not block.
 **Raised:** 2026-09-22
 
 Nothing else in S1-14 is clinical. Everything below is; nothing here should be
@@ -22,7 +22,9 @@ Proposed: an exact match on normalised **name + date of birth + sex**, where the
 does not match, creates a patient flagged `uncertain` and opens a reconciliation item.
 It does **not** silently link to the existing record.
 
-> **Confirm this is the right default.** Recommendation: yes, always.
+> **DECIDED 2026-09-22 (Mark, via Founder): flag them.** An exact name + DOB + sex
+> match with a differing MRN creates an `uncertain` patient and a reconciliation item.
+> It never auto-links.
 
 Consequence if we get it wrong in the permissive direction: two people's clinical
 records merge silently. That is the failure mode with no safe recovery.
@@ -31,12 +33,25 @@ records merge silently. That is the failure mode with no safe recovery.
 
 Proposed: demographics only. **No clinical facts. No pre-visit brief.**
 
-> **Confirm the brief must not render at all for an uncertain patient** — rather than
-> rendering with a warning banner.
-
-The argument for rendering nothing: a brief shown with a caveat still gets read, and a
-clinician under time pressure reads the content, not the banner. The argument against:
-an empty screen gives no path forward. We need your call on which failure is worse.
+> **DECIDED 2026-09-22 (Mark, via Founder): render with a warning banner.**
+>
+> The brief renders for an uncertain patient, carrying a visible warning that the
+> patient's identity is unconfirmed. It is not suppressed.
+>
+> Also decided: only `clinician` and `practice_manager` may view or act on an
+> uncertain patient.
+>
+> **Residual risk, accepted.** The argument against a banner is that a clinician
+> between patients reads the content and not the warning. The decision is Mark's and
+> it is the right kind of call for a clinician to make — an empty screen gives no path
+> forward and invites a workaround. Implementation obligation that follows: the
+> warning must be structurally unskippable rather than decorative — it belongs in the
+> content flow, not as a dismissible chrome element, and the uncertain state must be
+> visible on every screen showing that patient, not only on entry. Recorded here so
+> the obligation travels with the decision.
+>
+> Clinical facts still do not attach to an uncertain patient (spec §7.2). The banner
+> governs what is shown, not what is stored.
 
 ### 3. Who may merge
 
@@ -44,18 +59,21 @@ Proposed: merge requires capability `patient:reconcile`, a **mandatory free-text
 reason**, and both records are retained (`merged_into`, nothing deleted). AI can never
 merge (AGENTS.md doctrine 9).
 
-> **Which roles may merge?** Recommendation: clinician or practice manager only.
-> **Is a merge ever safe for a medical assistant to perform?**
+> **DECIDED 2026-09-22 (Mark, via Founder): clinician or practice manager only.**
+> A medical assistant may not merge.
 
 ### 4. Unmerge
 
 Proposed: **split is not supported in Stage 1.** A wrong merge is corrected by creating
 a new record and an audit note explaining it.
 
-> **Acceptable for a pilot, or must split exist before real patients?**
-
-This is the one we would most like a hard answer on, because building split later is
-considerably more expensive than building it now.
+> **DECIDED 2026-09-22 (Mark, via Founder): no split in Stage 1.** A wrong merge is
+> corrected by creating a new record, an audit note, **and a physician sign-off**.
+>
+> Note the asymmetry, which is deliberate and worth preserving in implementation: a
+> practice manager may *make* a merge, but only a physician may sign off the
+> correction of one. Merging is an operational act; declaring that two records are in
+> fact two different people is a clinical one.
 
 ---
 
