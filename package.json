@@ -9,7 +9,7 @@
   },
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "verify": "pnpm run test:phi && pnpm run test:arch && pnpm run test:roles && pnpm run test && pnpm run test:coverage",
+    "verify": "pnpm run test:phi && pnpm run test:arch && pnpm run test:roles && pnpm run test && pnpm run test:adversarial && pnpm run test:coverage",
     "test:arch": "tsx scripts/verify-architecture.ts",
     "test:phi": "tsx scripts/verify-synthetic-data.ts",
     "compile:roles": "tsx scripts/compile-role-matrix.ts",
@@ -17,6 +17,7 @@
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:adversarial": "vitest run tests/adversarial",
     "test:coverage": "vitest run --coverage.enabled --coverage.include=packages/crypto/src/** tests/crypto-envelope.test.ts"
   },
   "devDependencies": {
