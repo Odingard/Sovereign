@@ -22,6 +22,9 @@ importers:
       '@sovereign/adapter-identity-scim':
         specifier: workspace:*
         version: link:adapters/identity-scim
+      '@sovereign/adapter-siem-export':
+        specifier: workspace:*
+        version: link:adapters/siem-export
       '@sovereign/application':
         specifier: workspace:*
         version: link:packages/application
@@ -163,6 +166,18 @@ importers:
       '@sovereign/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+
+  adapters/siem-export:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@sovereign/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
       '@sovereign/domain':
         specifier: workspace:*
         version: link:../../packages/domain

@@ -23,6 +23,7 @@
     "@biomejs/biome": "^1.9.4",
     "@sovereign/adapter-identity-oidc": "workspace:*",
     "@sovereign/adapter-identity-scim": "workspace:*",
+    "@sovereign/adapter-siem-export": "workspace:*",
     "@sovereign/application": "workspace:*",
     "@sovereign/contracts": "workspace:*",
     "@sovereign/crypto": "workspace:*",
