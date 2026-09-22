@@ -15,7 +15,7 @@
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage.enabled --coverage.include=packages/crypto/src/**"
+    "test:coverage": "vitest run --coverage.enabled --coverage.include=packages/crypto/src/** tests/crypto-envelope.test.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
