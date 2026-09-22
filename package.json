@@ -9,8 +9,9 @@
   },
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "verify": "pnpm run test:phi && pnpm run test:arch && pnpm run test:roles && pnpm run test && pnpm run test:adversarial && pnpm run test:coverage",
+    "verify": "pnpm run test:phi && pnpm run test:arch && pnpm run test:tenant-predicates && pnpm run test:roles && pnpm run test && pnpm run test:adversarial && pnpm run test:coverage",
     "test:arch": "tsx scripts/verify-architecture.ts",
+    "test:tenant-predicates": "tsx scripts/verify-tenant-predicates.ts",
     "test:phi": "tsx scripts/verify-synthetic-data.ts",
     "compile:roles": "tsx scripts/compile-role-matrix.ts",
     "test:roles": "tsx scripts/compile-role-matrix.ts --check",

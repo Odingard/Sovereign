@@ -123,6 +123,10 @@ blocks Gate 1 on score. The G-43 action does.
 - A repository that drops its explicit `WHERE tenant_id` predicate and relies on RLS
   alone. That halves the defence and nothing currently detects it.
 
-> **Gap to open:** a lint or architecture test asserting every tenant-table query
-> carries an explicit tenant predicate. Today that is convention, and TB-09 is the one
-> boundary where convention is not enough.
+**Closed 2026-09-22.** `scripts/verify-tenant-predicates.ts` enforces it, wired into
+`pnpm run verify`. A query against any of 32 tenant tables must carry an explicit
+tenant predicate or be declared `@systemScope` in its doc comment; an undeclared
+cross-tenant query fails the build. That converts the second layer of ADR-0009 from
+convention into an enforced control, and it makes the `@systemScope` walkthrough spec
+§13 S1-25 requires at Gate 1 a matter of grepping for a tag rather than reading every
+repository.
