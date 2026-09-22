@@ -79,6 +79,25 @@ export const AuditEventInputSchema = z
 export type AuditEventInput = z.infer<typeof AuditEventInputSchema>;
 
 /**
+ * The same event as it arrives over the bus.
+ *
+ * `AuditEventInputSchema` requires a real `Date` for `occurredAt`, which is right for
+ * an in-process emitter and impossible for a JSON payload: JSON has no date type, so a
+ * message off Pub/Sub carries an ISO string and would be rejected by the strict schema
+ * every time.
+ *
+ * Rather than loosen the contract for everyone, the wire boundary declares its own
+ * decoding. `z.coerce.date()` accepts the ISO string and still rejects anything that
+ * does not parse to a valid date, so nothing is waved through — the coercion is
+ * narrow, explicit, and confined to the one place a wire format is actually involved.
+ */
+export const AuditEventWireSchema = AuditEventInputSchema.extend({
+  occurredAt: z.coerce.date(),
+}).strict();
+
+export type AuditEventWire = z.infer<typeof AuditEventWireSchema>;
+
+/**
  * The chained record. `services/audit` assigns these three fields on append:
  *
  *   seq        per-tenant monotonic sequence, assigned under an advisory lock

@@ -410,6 +410,9 @@ importers:
       '@sovereign/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@sovereign/kernel':
+        specifier: workspace:*
+        version: link:../../packages/kernel
       kysely:
         specifier: ^0.28.14
         version: 0.28.17
