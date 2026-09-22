@@ -1,0 +1,20 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.iam.google_project_iam_member.deploy",
+      "type": "google_project_iam_member",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "project": "sovereign-dev",
+          "role": "roles/editor",
+          "member": "serviceAccount:deploy@sovereign-dev.iam.gserviceaccount.com"
+        }
+      }
+    }
+  ]
+}

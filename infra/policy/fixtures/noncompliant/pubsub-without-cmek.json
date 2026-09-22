@@ -1,0 +1,18 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.pubsub.google_pubsub_topic.audit_events",
+      "type": "google_pubsub_topic",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "audit-events"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.kms.google_kms_crypto_key.tenant_kek",
+      "type": "google_kms_crypto_key",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "tenant-kek"
+        }
+      }
+    }
+  ]
+}

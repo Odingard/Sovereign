@@ -1,0 +1,19 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.pubsub.google_pubsub_subscription.audit",
+      "type": "google_pubsub_subscription",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "audit-sub",
+          "dead_letter_policy": []
+        }
+      }
+    }
+  ]
+}

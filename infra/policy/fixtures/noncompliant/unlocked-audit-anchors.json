@@ -1,0 +1,31 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.gcs.google_storage_bucket.audit_anchors",
+      "type": "google_storage_bucket",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "audit-anchors-dev",
+          "location": "US",
+          "uniform_bucket_level_access": true,
+          "encryption": [
+            {
+              "default_kms_key_name": "projects/sovereign-dev/locations/us-central1/keyRings/sovereign-dev-kr/cryptoKeys/db-kek"
+            }
+          ],
+          "retention_policy": [
+            {
+              "retention_period": 220752000,
+              "is_locked": false
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
