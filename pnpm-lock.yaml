@@ -19,6 +19,9 @@ importers:
       '@sovereign/adapter-identity-oidc':
         specifier: workspace:*
         version: link:adapters/identity-oidc
+      '@sovereign/adapter-identity-scim':
+        specifier: workspace:*
+        version: link:adapters/identity-scim
       '@sovereign/application':
         specifier: workspace:*
         version: link:packages/application
@@ -115,6 +118,21 @@ importers:
       jose:
         specifier: ^5.9.6
         version: 5.10.0
+
+  adapters/identity-scim:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@sovereign/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      zod:
+        specifier: ^3.24.2
+        version: 3.25.76
 
   adapters/infusion:
     dependencies:
