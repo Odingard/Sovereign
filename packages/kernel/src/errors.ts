@@ -63,12 +63,15 @@ export const idempotencyKeyReused = (why: string) =>
 /**
  * A dual-control action was attempted without two distinct approvers.
  *
- * 403, not 400. The request is well formed; the caller simply does not have the
- * authority to do this alone, and saying "bad request" would suggest it could be
- * fixed by rephrasing.
+ * 409, per spec §10.9: "Dual control: same user requests and approves → 409." Not 400
+ * — the request is well formed. Not 403 either, which was the first choice here and
+ * was wrong: 403 says the caller may not do this, when in fact they may, once somebody
+ * else agrees. 409 says the request conflicts with the current state of the approval,
+ * which is exactly what has happened and is what tells the caller to go and get a
+ * second person rather than to give up.
  */
 export const dualControlRequired = (why: string) =>
-  new SovereignError(ErrorCode.DUAL_CONTROL_REQUIRED, 403, why);
+  new SovereignError(ErrorCode.DUAL_CONTROL_REQUIRED, 409, why);
 
 /**
  * A cross-tenant reference is reported as 404, never 403.
