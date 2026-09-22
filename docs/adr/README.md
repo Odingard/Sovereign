@@ -15,4 +15,4 @@ ADRs use: Status, Context, Decision, Consequences, Rejected Alternatives, Verifi
 - ADR-0011 — Adoption of the Enterprise SaaS Master Build Plan and Stage 1 reconciliation (Accepted)
 - ADR-0012 — Identity provider selection: Google Cloud Identity Platform + Keycloak (Accepted)
 - ADR-0013 — Local-First Stage 1 Sequencing (Accepted)
-- ADR-0014 — Extraction Lineage Describes Mechanism, Not Authenticity (Proposed)
+- ADR-0014 — Extraction Lineage Describes Mechanism, Not Authenticity (Accepted)

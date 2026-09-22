@@ -1,6 +1,10 @@
 # ADR-0014 — Extraction Lineage Describes Mechanism, Not Authenticity
 
-Status: **Proposed** (Architecture reviewer Roger; Founder to accept)
+Status: **Accepted** (Founder, 2026-09-22)
+
+> Accepted by Andre Byrd (Founder), who also routed G-45 from clinical to architecture and
+> supplied the three decisions recorded below. Architecture reviewer Roger has **not** reviewed
+> this ADR; see G-44 — review for this period is retrospective by Founder decision.
 
 Supersedes nothing. Resolves gap **G-45**, which was opened during WO-002C S1-05 and
 initially mis-routed as `REQUIRES CLINICAL DECISION`.
