@@ -23,7 +23,7 @@ import { type TokenRejectedError, verifyAccessToken } from "@sovereign/adapter-i
 import { CORRELATION_ID_HEADER, SIGNED_CONTEXT_HEADER } from "@sovereign/contracts";
 import type { RequestContext } from "@sovereign/contracts";
 import { signContext } from "@sovereign/kernel";
-import { ErrorCode } from "@sovereign/kernel";
+import { ErrorCode, SovereignError } from "@sovereign/kernel";
 import Fastify, { type FastifyError, type FastifyInstance } from "fastify";
 import type { JWTVerifyGetKey } from "jose";
 import type { IntegrationHealthTracker } from "./health.js";
@@ -139,6 +139,19 @@ export function buildGateway(options: GatewayOptions): FastifyInstance {
   app.setErrorHandler((error: FastifyError, request, reply) => {
     // One shape out, always. An unhandled error must not become a stack trace on the
     // wire (§8.7).
+    //
+    // A SovereignError carries its own status and code, and is matched FIRST. It used
+    // to fall through to the branch below, because that branch reads `statusCode` and
+    // a SovereignError carries `httpStatus` — so every authorization refusal left the
+    // gateway as a 500. That is not a cosmetic mismatch: it collapsed 403 and 404 into
+    // one status, and the 404-not-403 asymmetry across tenants is the single rule this
+    // whole surface exists to defend (spec §10 test 1). Nothing caught it because no
+    // authorized route existed until the audit API.
+    if (error instanceof SovereignError) {
+      request.log.warn({ errorCode: error.code }, "request refused");
+      return reply.code(error.httpStatus).send(error.toWireResponse());
+    }
+
     request.log.error({ errorCode: "E_INTERNAL" }, error.message);
     const status = error.statusCode ?? 500;
     const code = status === 413 ? "E_PAYLOAD_TOO_LARGE" : ErrorCode.INTERNAL;

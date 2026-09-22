@@ -55,6 +55,34 @@ export class DefaultActionDefinitionRegistry implements ActionDefinitionRegistry
       description: "Read system authorization audit logs.",
     });
 
+    // 2b. Clinical audit chain: query, verify, export (spec §7.3)
+    this.registerDefinition({
+      capability: CanonicalCapabilities.AUDIT_QUERY,
+      requiredAuthorityClass: AuthorityClass.CLASS_A_AUTONOMOUS_ADMIN,
+      requiresPatientContext: false,
+      requiresOrganizationScope: false,
+      requiresAuthorizationBinding: false,
+      description: "Query the clinical audit chain.",
+    });
+
+    this.registerDefinition({
+      capability: CanonicalCapabilities.AUDIT_VERIFY,
+      requiredAuthorityClass: AuthorityClass.CLASS_A_AUTONOMOUS_ADMIN,
+      requiresPatientContext: false,
+      requiresOrganizationScope: false,
+      requiresAuthorizationBinding: false,
+      description: "Recompute the audit chain and compare it to its anchors.",
+    });
+
+    this.registerDefinition({
+      capability: CanonicalCapabilities.AUDIT_EXPORT,
+      requiredAuthorityClass: AuthorityClass.CLASS_A_AUTONOMOUS_ADMIN,
+      requiresPatientContext: false,
+      requiresOrganizationScope: false,
+      requiresAuthorizationBinding: false,
+      description: "Produce a signed export of the clinical audit chain. Dual control.",
+    });
+
     // 3. Clinical State Read (Class A - Patient-scoped informational)
     this.registerDefinition({
       capability: CanonicalCapabilities.CLINICAL_STATE_READ,
