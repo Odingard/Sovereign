@@ -23,6 +23,7 @@
     "@sovereign/contracts": "workspace:*",
     "@sovereign/crypto": "workspace:*",
     "@sovereign/domain": "workspace:*",
+    "@sovereign/kernel": "workspace:*",
     "@sovereign/persistence": "workspace:*",
     "@sovereign/telemetry": "workspace:*",
     "@sovereign/provider-ai-fake": "workspace:*",

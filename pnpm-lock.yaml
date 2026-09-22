@@ -28,6 +28,9 @@ importers:
       '@sovereign/domain':
         specifier: workspace:*
         version: link:packages/domain
+      '@sovereign/kernel':
+        specifier: workspace:*
+        version: link:packages/kernel
       '@sovereign/persistence':
         specifier: workspace:*
         version: link:packages/persistence
