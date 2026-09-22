@@ -62,22 +62,26 @@ audit chain is hash-linked and append-only.
 
 ### Information disclosure — reading another tenant's data
 
-`PARTIAL`. This is the top risk in the system and carries two layers: RLS, and
-tenant-bound encryption behind it. Both are tested. It is `PARTIAL` rather than
-`MITIGATED` for one honest reason: **G-43**. Two RLS isolation tests fail against a
-local Postgres while passing 132/132 in CI, and the root cause is not isolated. Both
-failures are on the *positive* assertion — a tenant cannot see its **own** rows — and
-every fail-closed assertion passes, so it is not an isolation breach. But an isolation
-control whose behaviour differs between environments is not fully proven, and calling
-it mitigated would be claiming more than the evidence supports.
+`MITIGATED`. The top risk in the system, carrying two independent layers: RLS, and
+tenant-bound encryption behind it. Both are tested.
 
-**DREAD 5.8** — D10 R3 E3 A5 D8. Damage is maximal. Reproducibility and exploitability
-are low because two independent controls must both fail. Discoverability is high: any
+This row read `PARTIAL` until 2026-09-22 because of **G-43** — two RLS isolation tests
+failed locally while passing in CI, and an isolation control whose behaviour differs
+between environments is not proven. The root cause was a **test-harness defect**, not a
+control failure: the admin and app connections each defaulted independently to
+`localhost:5432`, so pointing the admin URL at another container left the app
+connection reading a different database entirely. A tenant could not see its own rows
+because they were not there. Both URLs are now derived from one. The full local suite
+passes 492/492.
+
+The tell was visible from the first run and is worth carrying forward: **both failures
+were on the positive assertion**, while every fail-closed assertion passed. An
+isolation breach shows up as seeing too MUCH, never too little.
+
+**DREAD 4.6** — D10 R2 E2 A5 D8. Damage remains maximal. Reproducibility and
+exploitability are low because two independent controls must both fail, and both are
+now proven in the environment they are tested in. Discoverability stays high: any
 multi-tenant API invites this test first.
-
-> **Action before Gate 1:** close G-43. Not because it is likely to be a breach, but
-> because this row cannot honestly read `MITIGATED` while an isolation test behaves
-> differently in two environments.
 
 ### Denial of service — one tenant exhausting shared capacity
 
@@ -105,7 +109,7 @@ Adversarial §10.1 asserts the evaluator is never reached.
 
 | Risk | Score | Status |
 |---|---|---|
-| Cross-tenant read via a defect in both RLS and encryption | 5.8 | Accepted pending G-43 closure |
+| Cross-tenant read via a defect in both RLS and encryption | 4.6 | Accepted; G-43 closed 2026-09-22 |
 | Noisy-neighbour degradation from per-instance limiting | 4.4 | Accepted for pilot; shared limiter before GA |
 
 Both are in the 4.0–6.9 band and need the security reviewer's signature. Neither
