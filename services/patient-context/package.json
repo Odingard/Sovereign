@@ -1,0 +1,15 @@
+{
+  "name": "@sovereign/service-patient-context",
+  "version": "0.1.0",
+  "description": "Sovereign Patient Context - deterministic identity matching, provenance and reconciliation",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/crypto": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

@@ -49,6 +49,9 @@ importers:
       '@sovereign/service-audit':
         specifier: workspace:*
         version: link:services/audit
+      '@sovereign/service-patient-context':
+        specifier: workspace:*
+        version: link:services/patient-context
       '@sovereign/telemetry':
         specifier: workspace:*
         version: link:packages/telemetry
@@ -350,6 +353,18 @@ importers:
       kysely:
         specifier: ^0.28.14
         version: 0.28.17
+
+  services/patient-context:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@sovereign/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
 
 packages:
 
