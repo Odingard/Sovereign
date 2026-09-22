@@ -46,5 +46,22 @@ services:
     ports:
       - "8080:8080"
 
+  # Local IdP (WO-002B S1-08, ADR-0012 §2). Keycloak here, Cloud Identity Platform in
+  # cloud environments — the OIDC adapter implements both from day one, which is how
+  # we find out whether the port is real. Synthetic users only; never deployed.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: sovereign-keycloak
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm", "--http-port=8081"]
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=synthetic-local-only
+      - KC_HEALTH_ENABLED=true
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./infra/local/keycloak:/opt/keycloak/data/import:ro
+
 volumes:
   postgres_data:
