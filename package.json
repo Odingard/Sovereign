@@ -32,6 +32,7 @@
     "@sovereign/kernel": "workspace:*",
     "@sovereign/persistence": "workspace:*",
     "@sovereign/service-audit": "workspace:*",
+    "@sovereign/service-metering": "workspace:*",
     "@sovereign/service-patient-context": "workspace:*",
     "@sovereign/service-retention": "workspace:*",
     "@sovereign/provider-ai-fake": "workspace:*",
