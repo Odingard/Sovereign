@@ -1,0 +1,15 @@
+{
+  "name": "@sovereign/adapter-siem-export",
+  "version": "0.1.0",
+  "description": "Sovereign SIEM Export - ECS-compatible audit event streaming to HEC, Sentinel, Chronicle or webhook",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/crypto": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}
