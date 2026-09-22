@@ -131,9 +131,9 @@ describe("Sovereign WO-001 Domain Invariant Tests", () => {
         sourceLocator: "encounters/20260901/note-771",
         contentSha256: "a".repeat(64),
         contentMimeType: "text/plain",
-        // PR-A2 mapping: "RAW_INGESTION" is not an ExtractionLineage member. Machine
-        // ingestion with no AI and no human keying is DETERMINISTIC_PARSER. Whether the
-        // data is synthetic is carried separately by classification.origin below.
+        // ADR-0014: lineage describes mechanism, not authenticity. Machine ingestion
+        // with no AI and no human keying is DETERMINISTIC_PARSER; synthetic-ness is
+        // carried by classification.origin below.
         extractionLineage: ExtractionLineage.DETERMINISTIC_PARSER,
       },
       validTemporal,
@@ -304,9 +304,9 @@ describe("Sovereign WO-001 Domain Invariant Tests", () => {
     expect(() => {
       graph.addNode({
         nodeId: "NODE-001" as ExecutionNodeId,
-        // PR-A2 mapping: ExecutionNodeProps has `actionType`, not `nodeType`, and
-        // requires `authorityClass`. Submitting a prior-auth packet on a clinician's
-        // order is a clinician-authorized transaction (Class C).
+        // PR-A2: ExecutionNodeProps has `actionType`, not `nodeType`, and requires
+        // `authorityClass`. Submitting a prior-auth packet on a clinician's order is a
+        // clinician-authorized transaction (Class C).
         actionType: "TRANSMIT_PA_PACKET",
         authorityClass: AuthorityClass.CLASS_C_CLINICIAN_AUTH,
         state: ExecutionNodeState.READY,
@@ -336,7 +336,7 @@ describe("Sovereign WO-001 Domain Invariant Tests", () => {
       nodeId: "NODE-PA-SUBMIT" as ExecutionNodeId,
       attemptNumber: 1,
       targetSystem: "PAYER_GATEWAY",
-      // PR-A2 mapping: `attemptedAt` -> `dispatchedAt`. The former external transaction
+      // PR-A2: `attemptedAt` -> `dispatchedAt`. The former external transaction
       // id "PAYER-TX-998811" has no field on ExternalExecutionAttempt; see PR note.
       dispatchedAt: new Date(),
       state: ExternalAttemptState.ACCEPTED,
@@ -351,7 +351,7 @@ describe("Sovereign WO-001 Domain Invariant Tests", () => {
     graph = graph.completeNode("NODE-PA-SUBMIT" as ExecutionNodeId, {
       confirmationId: "CONF-001" as ConfirmationId,
       nodeId: "NODE-PA-SUBMIT" as ExecutionNodeId,
-      // PR-A2 mapping: `confirmedAt` -> `externalTimestamp`;
+      // PR-A2: `confirmedAt` -> `externalTimestamp`;
       // `verifyingArtifactHash` -> `confirmationPayloadSha256`.
       // `channel` and `confirmationNarrative` are required and had no prior value.
       externalTimestamp: new Date(),
@@ -381,8 +381,7 @@ describe("Sovereign WO-001 Domain Invariant Tests", () => {
         sourceLocator: "loc://synth/01",
         contentSha256: "c".repeat(64),
         contentMimeType: "application/json",
-        // PR-A2 mapping: see note above. Syntheticness lives in classification.origin
-        // (SYNTHETIC_SIMULATION), not in the extraction lineage.
+        // ADR-0014: synthetic-ness lives in classification.origin, not in lineage.
         extractionLineage: ExtractionLineage.DETERMINISTIC_PARSER,
       },
       validTemporal,

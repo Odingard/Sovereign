@@ -16,7 +16,9 @@ import {
   IntentActionCategory,
   type IntentId,
   type ProvenanceTemporalContext,
+  SyntheticSourceNotPermittedError,
   TemporalPrecision,
+  assertSourceSystemPermittedForEnvironment,
   createTenantPatientContext,
 } from "@sovereign/domain";
 import { describe, expect, it } from "vitest";
@@ -54,9 +56,8 @@ describe("Sovereign WO-001 Mandatory Clarification Tests", () => {
         sourceLocator: "sim://001",
         contentSha256: "d".repeat(64),
         contentMimeType: "text/plain",
-        // PR-A2 mapping: "SYNTHETIC_FIXTURE" is not an ExtractionLineage member, and the
-        // enum has no synthetic option by design — syntheticness is carried by
-        // classification.origin. Deterministic fixture generation is DETERMINISTIC_PARSER.
+        // ADR-0014: the enum has no synthetic member by design. This fixture simulates
+        // a deterministic-parse ingestion; its synthetic-ness is in classification.origin.
         extractionLineage: ExtractionLineage.DETERMINISTIC_PARSER,
       },
       temporal,
@@ -81,7 +82,7 @@ describe("Sovereign WO-001 Mandatory Clarification Tests", () => {
         sourceLocator: "ehr://patient/123/doc/456",
         contentSha256: "e".repeat(64),
         contentMimeType: "text/plain",
-        // PR-A2 mapping: a raw FHIR extract is a machine parse with no AI and no human
+        // ADR-0014: a raw FHIR extract is a machine parse with no AI and no human
         // keying -> DETERMINISTIC_PARSER.
         extractionLineage: ExtractionLineage.DETERMINISTIC_PARSER,
       },
@@ -326,5 +327,53 @@ describe("Sovereign WO-001 Mandatory Clarification Tests", () => {
     expect(evidenceRecordedEvent.payload.contentHash).toHaveLength(64);
     expect(evidenceRecordedEvent.correlationId).toBe("CORR-9988");
     expect(evidenceRecordedEvent.causationId).toBe("CAUSE-1122");
+  });
+});
+
+describe("ADR-0014: extraction lineage describes mechanism, not authenticity", () => {
+  it("has no member meaning synthetic or test data", () => {
+    // A production enum must never carry a value meaning "this isn't real". Such a
+    // value invites a branch that behaves differently for synthetic data — and a
+    // branch that only runs for synthetic data is never exercised against real data
+    // before it matters.
+    for (const member of Object.values(ExtractionLineage)) {
+      expect(member).not.toMatch(/SYNTHETIC|TEST|FIXTURE|FAKE|MOCK/i);
+    }
+  });
+
+  it("keeps lineage and provenance origin orthogonal", () => {
+    // The same mechanism can carry real or synthetic data; the same origin can arrive
+    // by different mechanisms. Conflating them is what G-45 asked about.
+    const lineage = Object.values(ExtractionLineage) as string[];
+    const origins = Object.values(DataProvenanceOrigin) as string[];
+    expect(lineage.some((l) => origins.includes(l))).toBe(false);
+  });
+
+  it("permits a synthetic source system in local, CI and test", () => {
+    for (const environment of ["local", "ci", "test"] as const) {
+      expect(() =>
+        assertSourceSystemPermittedForEnvironment("SYNTHETIC_SIM", environment),
+      ).not.toThrow();
+    }
+  });
+
+  it("rejects a synthetic source system in dev, staging and prod", () => {
+    // ADR-0014 decision 2: the classification is only worth having if something
+    // enforces it. Otherwise SYNTHETIC_SIMULATION is a comment.
+    for (const environment of ["dev", "staging", "prod"] as const) {
+      expect(() => assertSourceSystemPermittedForEnvironment("SYNTHETIC_SIM", environment)).toThrow(
+        SyntheticSourceNotPermittedError,
+      );
+    }
+  });
+
+  it("leaves non-synthetic source systems alone in every environment", () => {
+    // The guard stops synthetic data reaching real environments. It deliberately does
+    // NOT assert that anything else is real — that is G0-B's job.
+    for (const environment of ["local", "ci", "test", "dev", "staging", "prod"] as const) {
+      expect(() =>
+        assertSourceSystemPermittedForEnvironment("EPIC_AMBULATORY_V1", environment),
+      ).not.toThrow();
+    }
   });
 });

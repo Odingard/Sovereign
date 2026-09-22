@@ -213,7 +213,7 @@ describe("Sovereign Clinical Intent vs. Execution Authority Boundaries", () => {
       nodeId: "NODE-CONSENT" as ExecutionNodeId,
       attemptNumber: 1,
       targetSystem: "CONSENT_PORTAL",
-      // PR-A2 mapping: `attemptedAt` -> `dispatchedAt`.
+      // PR-A2: `attemptedAt` -> `dispatchedAt`.
       dispatchedAt: new Date(),
       state: ExternalAttemptState.ACCEPTED,
     });
@@ -226,7 +226,7 @@ describe("Sovereign Clinical Intent vs. Execution Authority Boundaries", () => {
       graph.completeNode("NODE-CONSENT" as ExecutionNodeId, {
         confirmationId: "CONF-01" as ConfirmationId,
         nodeId: "NODE-CONSENT" as ExecutionNodeId,
-        // PR-A2 mapping: `confirmedAt` -> `externalTimestamp`; `channel` and
+        // PR-A2: `confirmedAt` -> `externalTimestamp`; `channel` and
         // `confirmationNarrative` are required and had no prior value.
         externalTimestamp: new Date(),
         channel: ConfirmationChannel.ELECTRONIC_PORTAL,
