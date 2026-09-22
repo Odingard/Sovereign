@@ -44,6 +44,20 @@ failures were on the *positive* assertion — a tenant could not see its own row
 every fail-closed assertion passed. That asymmetry is what distinguishes a broken
 harness from a broken control. Check it first.
 
+## A third rule, learned this week
+
+> A test one layer below the defect cannot see it.
+
+G-60: every authorization refusal left the gateway as `500 E_INTERNAL`, because the
+error handler read `statusCode` and `SovereignError` carries `httpStatus`. That
+collapsed 403 and 404 into one status — erasing the asymmetry above, the one thing
+this suite exists to defend. The §10.1 test passed the whole time, because it calls
+`requireCapability` directly: it proved the guard, not the wire.
+
+Where the spec names a boundary — "through the HTTP edge", "`GET /v1/**`" — the test
+should cross that boundary. §10.24 now does. §10.1 does not yet, and G-62 says so
+rather than leaving it to be discovered the same way.
+
 ## Running
 
 ```

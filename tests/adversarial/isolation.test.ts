@@ -137,6 +137,10 @@ beforeAll(async () => {
   app.get("/v1/echo", async (request) => ({
     seenContext: request.headers[SIGNED_CONTEXT_HEADER.toLowerCase()],
     seenTenantHeader: request.headers["x-tenant-id"],
+    // Echoed so §10.24 can assert on the actor kind the GATEWAY derived, rather than
+    // on what a helper returns when called directly. Test-only route.
+    derivedActorKind: request.sovereignContext?.actorKind,
+    derivedTenantId: request.sovereignContext?.tenantId,
   }));
   await app.ready();
 });
@@ -746,6 +750,32 @@ describe("§10.24 an AI principal cannot reach Class C or D", () => {
       const kind = actorKindForRoles(roles);
       expect(kind).not.toBe(ActorKind.AI_AGENT_RUNTIME);
       expect(kind).not.toBe(ActorKind.SOVEREIGN_SERVICE);
+    }
+  });
+
+  it("is not obtainable by forging the claim, through the HTTP edge", async () => {
+    // The end-to-end half the spec actually asks for: "WO-002 invariant preserved
+    // end-to-end through the HTTP edge". The two assertions below call helpers
+    // directly, which proves the helpers and not the wire — the same shape as G-60,
+    // where every gateway refusal was a 500 for months while a guard test passed.
+    //
+    // The attack: put the actor kind in the token and hope something reads it. The
+    // gateway DERIVES kind from roles and never reads a claim for it, so the forged
+    // value has nowhere to land.
+    for (const forged of [ActorKind.AI_AGENT_RUNTIME, ActorKind.SOVEREIGN_SERVICE]) {
+      const token = await tokenFor(TENANT_A, {
+        actorKind: forged,
+        actor_kind: forged,
+        [SovereignClaims.ROLES]: ["clinician"],
+      });
+      const response = await app.inject({
+        method: "GET",
+        url: "/v1/echo",
+        headers: { authorization: `Bearer ${token}` },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json().derivedActorKind).toBe(ActorKind.HUMAN_CLINICIAN);
+      expect(response.json().derivedTenantId).toBe(TENANT_A);
     }
   });
 
