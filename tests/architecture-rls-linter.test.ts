@@ -18,9 +18,15 @@ const ADMIN_DB_URL =
   process.env.SOVEREIGN_DATABASE_URL ||
   "postgresql://sovereign_dev:sovereign_dev_password@localhost:5432/sovereign_test";
 
+// Derived from the admin URL, never defaulted independently — see G-43. Two
+// connections that can address different databases produce isolation failures that
+// look like breaches and are not.
 const APP_DB_URL =
   process.env.SOVEREIGN_APP_DATABASE_URL ||
-  "postgresql://sovereign_app:sovereign_app_password@localhost:5432/sovereign_test";
+  ADMIN_DB_URL.replace(
+    "sovereign_dev:sovereign_dev_password",
+    "sovereign_app:sovereign_app_password",
+  );
 
 describe("Architecture & Schema Isolation Linter (WO-002)", () => {
   let db: Kysely<SovereignPostgresDatabase>;

@@ -45,9 +45,26 @@ const ADMIN_DB_URL =
   process.env.SOVEREIGN_DATABASE_URL ||
   "postgresql://sovereign_dev:sovereign_dev_password@localhost:5432/sovereign_test";
 
+/**
+ * The app URL is DERIVED from the admin URL, not defaulted independently.
+ *
+ * G-43: both previously defaulted to localhost:5432 with separate env vars. Pointing
+ * SOVEREIGN_DATABASE_URL at a different host or port — which any developer running
+ * their own container does — left `appDb` connected to whatever happened to be on
+ * 5432. The admin connection wrote rows to one database and the app connection read
+ * from another, and the tenant-isolation tests failed on the POSITIVE assertion: a
+ * tenant could not see its own rows, because they were not there.
+ *
+ * That read as a possible isolation breach for weeks and was a test-harness defect.
+ * Deriving one from the other makes the two connections structurally incapable of
+ * addressing different databases.
+ */
 const APP_DB_URL =
   process.env.SOVEREIGN_APP_DATABASE_URL ||
-  "postgresql://sovereign_app:sovereign_app_password@localhost:5432/sovereign_test";
+  ADMIN_DB_URL.replace(
+    "sovereign_dev:sovereign_dev_password",
+    "sovereign_app:sovereign_app_password",
+  );
 
 describe("Sovereign PostgreSQL Identity, Authority & RLS Integration Suite", () => {
   let adminDb: Kysely<SovereignPostgresDatabase>;

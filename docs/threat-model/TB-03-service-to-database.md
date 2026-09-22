@@ -35,10 +35,11 @@ evidence that a hold existed is precisely the failure those tables exist to prev
 **DREAD 3.0** — D8 R1 E2 A3 D1.
 
 ### Information disclosure — a query escaping its tenant
-`PARTIAL`. Same finding as TB-09: RLS plus tenant-bound encryption, and **G-43** open.
-See TB-09 for the full analysis; it is not repeated here.
+`MITIGATED`. Same finding as TB-09: RLS plus tenant-bound encryption, both tested.
+G-43 closed 2026-09-22 as a test-harness defect rather than a control failure. See
+TB-09 for the full analysis; it is not repeated here.
 
-**DREAD 5.8** — as TB-09.
+**DREAD 4.6** — as TB-09.
 
 ### Denial of service — connection pool exhaustion
 `PARTIAL`. Per-service pool quotas are designed; unproven until Cloud SQL exists. A
@@ -56,5 +57,5 @@ asserts it cannot disable or bypass RLS.
 ## Residual risk
 | Risk | Score | Status |
 |---|---|---|
-| Cross-tenant read (shared with TB-09) | 5.8 | Pending G-43 |
+| Cross-tenant read (shared with TB-09) | 4.6 | G-43 closed |
 | Credential separation by configuration | 4.8 | Pending Cloud SQL IAM auth (cloud block) |
