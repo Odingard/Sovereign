@@ -31,7 +31,7 @@ In accordance with Sovereign Permanent Doctrine:
 - **Downstream Resolution Milestone:** Formalized in WO-004 evidence extraction provenance models and WO-008 verification conflict rules (`CONFLICTED` / `REQUIRES CLINICAL DECISION`).
 
 ### 4. Patient Matching, Merge and Split Semantics (S1-14)
-- **Status:** `REQUIRES CLINICAL DECISION`
+- **Status:** `PARTIALLY DECIDED 2026-09-22` — three of four blocking questions answered; one open
 - **Governing Work Orders:** WO-002B (S1-14 patient-context)
 - **Clinical Questions:** Seven, set out in full in `docs/clinical-decisions/S1-14-patient-matching.md`. Four of them block implementation: whether an exact name+DOB+sex match must flag as uncertain rather than auto-link; what may attach to an uncertain patient (specifically, whether a pre-visit brief renders at all); which roles may merge; and whether unmerge/split must exist before real patients.
 - **Why it cannot be guessed:** the permissive failure mode is two people's clinical records merging silently, which has no safe recovery. Building split after the fact is materially more expensive than building it now.

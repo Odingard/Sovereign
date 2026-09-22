@@ -2,7 +2,7 @@
 
 **For:** Mark (Clinical reviewer)
 **From:** Andre Byrd (Founder), WO-002B/S1-14
-**Status:** OPEN — questions 1, 4, 5 and 6 block implementation
+**Status:** PARTIALLY ANSWERED 2026-09-22 — questions 1, 3 and 4 decided; question 2 needs one clarification before S1-14 starts
 **Raised:** 2026-09-22
 
 Nothing else in S1-14 is clinical. Everything below is; nothing here should be
@@ -22,7 +22,9 @@ Proposed: an exact match on normalised **name + date of birth + sex**, where the
 does not match, creates a patient flagged `uncertain` and opens a reconciliation item.
 It does **not** silently link to the existing record.
 
-> **Confirm this is the right default.** Recommendation: yes, always.
+> **DECIDED 2026-09-22 (Mark, via Founder): flag them.** An exact name + DOB + sex
+> match with a differing MRN creates an `uncertain` patient and a reconciliation item.
+> It never auto-links.
 
 Consequence if we get it wrong in the permissive direction: two people's clinical
 records merge silently. That is the failure mode with no safe recovery.
@@ -31,8 +33,15 @@ records merge silently. That is the failure mode with no safe recovery.
 
 Proposed: demographics only. **No clinical facts. No pre-visit brief.**
 
-> **Confirm the brief must not render at all for an uncertain patient** — rather than
-> rendering with a warning banner.
+> **STILL OPEN.** The answer received — "clinician or practice manager only" — reads
+> as an *access* restriction on uncertain patients rather than an answer about the
+> brief. Recorded as such below, but the rendering question remains:
+>
+> **Does the pre-visit brief render for an uncertain patient — not at all, or with a
+> warning banner?**
+>
+> Provisionally recorded: only `clinician` and `practice_manager` may view or act on an
+> uncertain patient. This does not by itself decide whether the brief renders.
 
 The argument for rendering nothing: a brief shown with a caveat still gets read, and a
 clinician under time pressure reads the content, not the banner. The argument against:
@@ -44,18 +53,21 @@ Proposed: merge requires capability `patient:reconcile`, a **mandatory free-text
 reason**, and both records are retained (`merged_into`, nothing deleted). AI can never
 merge (AGENTS.md doctrine 9).
 
-> **Which roles may merge?** Recommendation: clinician or practice manager only.
-> **Is a merge ever safe for a medical assistant to perform?**
+> **DECIDED 2026-09-22 (Mark, via Founder): clinician or practice manager only.**
+> A medical assistant may not merge.
 
 ### 4. Unmerge
 
 Proposed: **split is not supported in Stage 1.** A wrong merge is corrected by creating
 a new record and an audit note explaining it.
 
-> **Acceptable for a pilot, or must split exist before real patients?**
-
-This is the one we would most like a hard answer on, because building split later is
-considerably more expensive than building it now.
+> **DECIDED 2026-09-22 (Mark, via Founder): no split in Stage 1.** A wrong merge is
+> corrected by creating a new record, an audit note, **and a physician sign-off**.
+>
+> Note the asymmetry, which is deliberate and worth preserving in implementation: a
+> practice manager may *make* a merge, but only a physician may sign off the
+> correction of one. Merging is an operational act; declaring that two records are in
+> fact two different people is a clinical one.
 
 ---
 
