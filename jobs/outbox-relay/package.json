@@ -1,0 +1,13 @@
+{
+  "name": "@sovereign/job-outbox-relay",
+  "version": "0.1.0",
+  "description": "Sovereign Outbox Relay - drains domain_outbox_events to the event bus, tenant by tenant",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*",
+    "kysely": "^0.28.14"
+  }
+}
