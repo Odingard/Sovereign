@@ -24,7 +24,11 @@ import { decryptField, encryptField } from "@sovereign/crypto";
 import {
   ActorKind,
   AuthorizationOutcome,
+  BREAK_GLASS_MAX_DURATION_MS,
+  BreakGlassRefusal,
   capabilitiesForRole,
+  evaluateBreakGlassRequest,
+  mayReadUnderBreakGlass,
   requiresMfa,
 } from "@sovereign/domain";
 import type {
@@ -468,6 +472,146 @@ describe("§10.13 no PHI reaches logs", () => {
       expect(output, `leaked ${field}`).not.toContain(value);
     }
     expect(output).toContain(TENANT_A);
+  });
+});
+
+describe("§10.15 break-glass is loud, narrow and time-boxed", () => {
+  const NOW_BG = new Date("2026-09-22T03:00:00Z");
+  const GOOD_REASON = "Unresponsive patient in ED, treating team needs allergy history";
+
+  function request(over: Record<string, unknown> = {}) {
+    return {
+      tenantId: TENANT_A,
+      requestedByActorId: "USER-SYN-SUPPORT",
+      requestedByActorKind: ActorKind.HUMAN_STAFF,
+      reason: GOOD_REASON,
+      requestedDurationMs: 60 * 60 * 1000,
+      approverActorIds: ["USER-SYN-APPROVER-1", "USER-SYN-APPROVER-2"],
+      ...over,
+    };
+  }
+
+  it("gives support_readonly no PHI access by default", () => {
+    // The deny half. Break-glass is a grant, never a role default (§6.3).
+    expect(capabilitiesForRole("support_readonly")).toEqual([]);
+  });
+
+  it("refuses an AI principal outright", () => {
+    // No configuration, no emergency and no approval makes this permissible. The
+    // check runs FIRST so an AI principal is never merely a caller that failed some
+    // other check — that would be one bug away from a caller that passed them.
+    for (const kind of [ActorKind.AI_AGENT_RUNTIME, ActorKind.SOVEREIGN_SERVICE]) {
+      const result = evaluateBreakGlassRequest(request({ requestedByActorKind: kind }), NOW_BG);
+      expect(result).toEqual({ granted: false, refusal: BreakGlassRefusal.AI_PRINCIPAL });
+    }
+  });
+
+  it("refuses an AI principal even with perfect approvals and reason", () => {
+    const result = evaluateBreakGlassRequest(
+      request({
+        requestedByActorKind: ActorKind.AI_AGENT_RUNTIME,
+        approverActorIds: ["USER-SYN-1", "USER-SYN-2", "USER-SYN-3"],
+      }),
+      NOW_BG,
+    );
+    expect(result).toEqual({ granted: false, refusal: BreakGlassRefusal.AI_PRINCIPAL });
+  });
+
+  it("refuses a requester who approved their own emergency", () => {
+    const result = evaluateBreakGlassRequest(
+      request({ approverActorIds: ["USER-SYN-SUPPORT", "USER-SYN-APPROVER-1"] }),
+      NOW_BG,
+    );
+    expect(result).toEqual({ granted: false, refusal: BreakGlassRefusal.SELF_APPROVAL });
+  });
+
+  it("refuses one approver, and the same approver twice", () => {
+    expect(
+      evaluateBreakGlassRequest(request({ approverActorIds: ["USER-SYN-1"] }), NOW_BG),
+    ).toEqual({ granted: false, refusal: BreakGlassRefusal.INSUFFICIENT_APPROVALS });
+    expect(
+      evaluateBreakGlassRequest(
+        request({ approverActorIds: ["USER-SYN-1", "USER-SYN-1"] }),
+        NOW_BG,
+      ),
+    ).toEqual({ granted: false, refusal: BreakGlassRefusal.INSUFFICIENT_APPROVALS });
+  });
+
+  it("refuses a blank or token reason", () => {
+    // Every read under the grant is audited with this reason. A blank one makes that
+    // trail worthless at the only moment it is ever read.
+    for (const reason of ["", "   ", "urgent", "need access"]) {
+      expect(evaluateBreakGlassRequest(request({ reason }), NOW_BG)).toEqual({
+        granted: false,
+        refusal: BreakGlassRefusal.REASON_MISSING,
+      });
+    }
+  });
+
+  it("refuses a window longer than four hours rather than clamping it", () => {
+    // A caller who asked for 24 hours and was quietly given 4 will plan around 24 and
+    // be surprised in the middle of whatever the emergency was.
+    const result = evaluateBreakGlassRequest(
+      request({ requestedDurationMs: BREAK_GLASS_MAX_DURATION_MS + 1 }),
+      NOW_BG,
+    );
+    expect(result).toEqual({
+      granted: false,
+      refusal: BreakGlassRefusal.DURATION_EXCEEDS_MAXIMUM,
+    });
+  });
+
+  it("grants a well-formed emergency and fires an alert naming both approvers", () => {
+    const result = evaluateBreakGlassRequest(request(), NOW_BG);
+    expect(result.granted).toBe(true);
+    if (!result.granted) {
+      return;
+    }
+    expect(result.expiresAt).toEqual(new Date("2026-09-22T04:00:00Z"));
+    expect(result.alert.approvedBy).toEqual(["USER-SYN-APPROVER-1", "USER-SYN-APPROVER-2"]);
+    expect(result.alert.tenantId).toBe(TENANT_A);
+  });
+
+  it("carries no clinical content in the alert", () => {
+    // The alert goes to an on-call channel. It says who, when and for how long — an
+    // identifier is not content, and the reason text is not repeated here.
+    const result = evaluateBreakGlassRequest(request(), NOW_BG);
+    expect(result.granted).toBe(true);
+    if (!result.granted) {
+      return;
+    }
+    expect(JSON.stringify(result.alert)).not.toContain("allergy");
+    expect(JSON.stringify(result.alert)).not.toContain(GOOD_REASON);
+  });
+
+  it("stops allowing reads the moment the window closes", () => {
+    // Expiry is checked at use, not by a cleanup job that might not have run.
+    const grant = { expiresAt: new Date("2026-09-22T04:00:00Z") };
+    expect(mayReadUnderBreakGlass(grant, NOW_BG, GOOD_REASON)).toBe(true);
+    expect(mayReadUnderBreakGlass(grant, new Date("2026-09-22T04:00:00Z"), GOOD_REASON)).toBe(
+      false,
+    );
+    expect(mayReadUnderBreakGlass(grant, new Date("2026-09-22T05:00:00Z"), GOOD_REASON)).toBe(
+      false,
+    );
+  });
+
+  it("stops allowing reads the moment the grant is revoked", () => {
+    const grant = {
+      expiresAt: new Date("2026-09-22T04:00:00Z"),
+      revokedAt: new Date("2026-09-22T03:10:00Z"),
+    };
+    expect(mayReadUnderBreakGlass(grant, new Date("2026-09-22T03:20:00Z"), GOOD_REASON)).toBe(
+      false,
+    );
+  });
+
+  it("requires a reason on every read, not only on the grant", () => {
+    // One reason given four hours ago does not explain what somebody is looking at
+    // now.
+    const grant = { expiresAt: new Date("2026-09-22T04:00:00Z") };
+    expect(mayReadUnderBreakGlass(grant, NOW_BG, "")).toBe(false);
+    expect(mayReadUnderBreakGlass(grant, NOW_BG, "looking")).toBe(false);
   });
 });
 

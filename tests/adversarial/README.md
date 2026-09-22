@@ -11,30 +11,26 @@ a function behaves; these prove the *system* refuses.
 
 | Attack | State | Where |
 |---|---|---|
-| 1, 2, 3, 4, 6, 8, 10, 13, 19, 20, 21, 22, 24 | runs | `isolation.test.ts` |
+| 1, 2, 3, 4, 6, 8, 10, 13, 15, 19, 20, 21, 22, 24 | runs | `isolation.test.ts` |
 | 5, 9, 11, 12, 17, 18 | runs | `audit-and-data.test.ts` |
 | 7 | runs | `isolation.test.ts` — site scoping, added with the control it tests (G-56) |
 | 16 | runs in part | `audit-and-data.test.ts` — see below |
 | 14 (egress allowlist), 23 (ring rollback) | skipped, reason attached | blocked on the WO-002A cloud block |
-| 15 (break-glass) | **absent — the control does not exist yet** | G-57 |
 
-**21 of 24 run. 2 are skipped with a stated reason. 1 is absent.**
+**22 of 24 run. 2 are skipped with a stated reason, both blocked on the cloud block. None are absent.**
 
-That last row is the one worth reading twice. Test 15 is not missing because nobody
-got to it; it is missing because there is nothing yet to attack:
+Two attacks were absent when this table was first written, because the controls they
+attack did not exist. Both controls were then built rather than the tests waved
+through — site scoping (G-56) and break-glass (G-57). What remains partial:
 
-- **§10.15 break-glass.** Emergency PHI access is specified as a time-boxed grant with
-  dual approval (§6.3), and `support_readonly` correctly holds no capabilities. The
-  grant path itself is unbuilt, so there is no "with grant → allowed, reason recorded,
-  alert fires" to assert (G-57).
 - **§10.16 kill switch.** The half that exists is tested: a disabled capability refuses
   rather than returning an empty result, the registry fails closed when unreadable, and
   a switch records who changed it and under which approval. The other half — "toggle in
   prod without approval → 409" — needs the identity service's switch API, which is not
   built (G-58).
 
-A suite that silently contained 20 tests when the spec calls for 24 would read as
-complete. This table exists so it reads as what it is.
+A suite that silently contained 15 tests when the spec calls for 24 read as complete
+for two work orders (G-59). This table exists so it reads as what it is.
 
 ## The rule these tests exist to defend
 
