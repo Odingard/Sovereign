@@ -101,7 +101,11 @@ export async function queryAuditEvents(
     AUDIT_QUERY_MAX_LIMIT,
   );
 
-  const conditions = [sql`tenant_id = ${tenantId}`];
+  // The tenant predicate is written literally into the template below, not pushed
+  // onto this array. Everything here is an OPTIONAL narrowing; the one condition that
+  // must always be present is the one that must not depend on an array being built
+  // correctly, and it is also the one a static checker has to be able to see.
+  const conditions: ReturnType<typeof sql>[] = [];
   if (filters.patientId !== undefined) {
     conditions.push(sql`patient_id = ${filters.patientId}`);
   }
@@ -124,11 +128,13 @@ export async function queryAuditEvents(
     conditions.push(sql`seq > ${filters.afterSeq.toString()}`);
   }
 
+  const narrowing = conditions.length === 0 ? sql`` : sql` AND ${sql.join(conditions, sql` AND `)}`;
+
   const result = await sql<RawRow>`
     SELECT event_id, seq, occurred_at, recorded_at, actor_kind, actor_id, patient_id,
            resource_type, resource_id, action, result, error_code, correlation_id
     FROM clinical_audit_event
-    WHERE ${sql.join(conditions, sql` AND `)}
+    WHERE tenant_id = ${tenantId}${narrowing}
     ORDER BY seq ASC
     LIMIT ${limit}
   `.execute(db);

@@ -16,10 +16,17 @@
  * its chain. `insertInto` is exempt: a tenant id arrives in the inserted values, and
  * RLS `WITH CHECK` refuses a row whose tenant does not match the session.
  *
+ * Raw `sql` templates are checked too, since G-55. They used to be exempt on the
+ * grounds that they are opaque to this analysis — which was true, and which mattered
+ * more than it looked: `jobs/` and the audit read path are written entirely in raw
+ * `sql`, so the code holding the WIDEST authority in the system sat in the one place
+ * the checker did not look. A blind spot that the important code happens to live in
+ * is not a limitation, it is a hole.
+ *
  * WHAT THIS DOES NOT CATCH, stated so nobody mistakes it for more than it is:
- *   - raw `sql` template queries, which are opaque to this analysis
  *   - a predicate built dynamically rather than written literally
  *   - a predicate that is present but compares against the wrong value
+ *   - a table name interpolated into a raw `sql` template rather than written out
  *
  * It catches the realistic regression: someone writes a new repository method, or
  * edits an existing one, and omits the predicate. That is the failure mode worth
@@ -147,6 +154,69 @@ function isDeclaredSystemScope(lines: string[], queryLine: number): boolean {
   return false;
 }
 
+/**
+ * Tables a raw `sql` template reads or mutates.
+ *
+ * Matches `FROM x`, `UPDATE x` and `DELETE FROM x`. `INSERT INTO` is excluded for the
+ * same reason `insertInto` is: the tenant id arrives in the values and RLS `WITH CHECK`
+ * refuses a row whose tenant does not match the session.
+ *
+ * A table name that is interpolated rather than written out is not matched, and cannot
+ * be — see the header. That is a narrower gap than the one this closes.
+ */
+function tablesInRawSql(template: string): string[] {
+  const found = new Set<string>();
+  const patterns = [
+    /\bFROM\s+([a-z_][a-z0-9_]*)/gi,
+    /\bUPDATE\s+([a-z_][a-z0-9_]*)/gi,
+    /\bDELETE\s+FROM\s+([a-z_][a-z0-9_]*)/gi,
+  ];
+  for (const pattern of patterns) {
+    for (const match of template.matchAll(pattern)) {
+      const table = (match[1] as string).toLowerCase();
+      if (TENANT_TABLES.includes(table)) found.add(table);
+    }
+  }
+  return [...found];
+}
+
+/**
+ * Collect a raw `sql` template literal starting at a line that opens one.
+ *
+ * Reads to the closing backtick rather than a fixed window, so a long multi-line query
+ * with its predicate at the bottom is still seen whole.
+ */
+function rawSqlTemplateFrom(lines: string[], start: number): { text: string; end: number } | null {
+  const first = lines[start] as string;
+  const open = first.indexOf("`", first.indexOf("sql"));
+  if (open === -1) return null;
+  if (first.indexOf("`", open + 1) !== -1) {
+    return { text: first.slice(open + 1, first.indexOf("`", open + 1)), end: start };
+  }
+  const collected = [first.slice(open + 1)];
+  for (let i = start + 1; i < lines.length && i < start + 60; i++) {
+    const line = lines[i] as string;
+    const close = line.indexOf("`");
+    if (close !== -1) {
+      collected.push(line.slice(0, close));
+      return { text: collected.join("\n"), end: i };
+    }
+    collected.push(line);
+  }
+  return null;
+}
+
+/**
+ * Whether a raw template carries a tenant predicate.
+ *
+ * Requires `tenant_id` on the left of a comparison, so a query that merely SELECTS the
+ * column does not count as one that filters on it. That distinction is the whole
+ * check: `SELECT tenant_id FROM patient` reads every tenant's rows.
+ */
+function rawSqlHasTenantPredicate(template: string): boolean {
+  return /\btenant_id\s*(=|IN\b|=\s*ANY)/i.test(template);
+}
+
 const systemScoped: Violation[] = [];
 
 function verify(): Violation[] {
@@ -155,6 +225,9 @@ function verify(): Violation[] {
     ...walk(join(ROOT, "packages/persistence/src")),
     ...walk(join(ROOT, "services")),
     ...walk(join(ROOT, "adapters")),
+    // jobs/ was outside the scanned roots as well as outside the checked syntax.
+    // Two independent reasons the widest-authority code was never looked at (G-55).
+    ...walk(join(ROOT, "jobs")),
   ];
 
   for (const file of files) {
@@ -172,6 +245,20 @@ function verify(): Violation[] {
           continue;
         }
         violations.push({ file: file.replace(`${ROOT}/`, ""), line: i + 1, table, builder });
+      }
+
+      // Raw `sql` templates, checked with the same rule (G-55).
+      if (!/\bsql\s*(<[^>]*>)?\s*`/.test(line)) continue;
+      const template = rawSqlTemplateFrom(lines, i);
+      if (template === null) continue;
+      if (rawSqlHasTenantPredicate(template.text)) continue;
+      for (const table of tablesInRawSql(template.text)) {
+        const record = { file: file.replace(`${ROOT}/`, ""), line: i + 1, table, builder: "sql``" };
+        if (isDeclaredSystemScope(lines, i)) {
+          systemScoped.push(record);
+        } else {
+          violations.push(record);
+        }
       }
     }
   }
@@ -191,7 +278,9 @@ if (violations.length === 0) {
     // @systemScope job at Gate 1, and this list is that walkthrough.
     console.log(`\nDeclared @systemScope cross-tenant queries (${systemScoped.length}):`);
     for (const s of systemScoped) {
-      console.log(`  - ${s.file}:${s.line}: .${s.builder}("${s.table}")`);
+      console.log(
+        `  - ${s.file}:${s.line}: ${s.builder === "sql``" ? "raw sql" : `.${s.builder}`} on "${s.table}"`,
+      );
     }
   }
   process.exit(0);
@@ -200,7 +289,7 @@ if (violations.length === 0) {
 console.error("✖ Queries on tenant tables without an explicit tenant predicate:");
 for (const v of violations) {
   console.error(
-    `  - ${v.file}:${v.line}: .${v.builder}("${v.table}") has no .where("tenant_id", ...)`,
+    `  - ${v.file}:${v.line}: ${v.builder === "sql``" ? "raw sql on " : `.${v.builder}(`}"${v.table}" has no tenant predicate`,
   );
 }
 console.error("");
