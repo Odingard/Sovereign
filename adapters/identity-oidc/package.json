@@ -1,0 +1,15 @@
+{
+  "name": "@sovereign/adapter-identity-oidc",
+  "version": "0.1.0",
+  "description": "Sovereign Identity OIDC Adapter - Keycloak (local) and Cloud Identity Platform behind one port",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*",
+    "jose": "^5.9.6"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "_comment": "Keycloak realm for LOCAL DEV AND CI ONLY (WO-002B S1-08, ADR-0012 §2). Synthetic users only, no cloud credentials, never deployed. The cloud environments use Google Cloud Identity Platform; this realm exists so the OIDC adapter is exercised against two real providers, which is how we learn whether the port is a port.",
+  "realm": "sovereign-local",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 900,
+  "ssoSessionMaxLifespan": 28800,
+  "refreshTokenMaxReuse": 0,
+  "revokeRefreshToken": true,
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA256",
+  "otpPolicyDigits": 6,
+  "clients": [
+    {
+      "clientId": "sovereign-gateway",
+      "name": "Sovereign Gateway",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:3000/*", "http://127.0.0.1:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "attributes": {
+        "access.token.lifespan": "900"
+      },
+      "protocolMappers": [
+        {
+          "name": "sovereign-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "https://api.sovereign.health",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "sovereign-tenant-id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "sovereign_tenant_id",
+            "claim.name": "https://sovereign\\.health/tenant_id",
+            "jsonType.label": "String",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "sovereign-user-id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "sovereign_user_id",
+            "claim.name": "https://sovereign\\.health/user_id",
+            "jsonType.label": "String",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "sovereign-site-ids",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "sovereign_site_ids",
+            "claim.name": "https://sovereign\\.health/site_ids",
+            "jsonType.label": "JSON",
+            "multivalued": "true",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "sovereign-roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "claim.name": "https://sovereign\\.health/roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "sovereign-session-id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sessionid-mapper",
+          "config": {
+            "claim.name": "https://sovereign\\.health/session_id",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "clinician" },
+      { "name": "app" },
+      { "name": "nurse_ma" },
+      { "name": "pa_specialist" },
+      { "name": "infusion_coordinator" },
+      { "name": "practice_manager" },
+      { "name": "org_admin" },
+      { "name": "security_admin" },
+      { "name": "auditor" },
+      { "name": "support_readonly" }
+    ]
+  },
+  "users": [
+    {
+      "username": "syn.clinician",
+      "email": "syn.clinician@example.test",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Synthetic",
+      "lastName": "Clinician",
+      "attributes": {
+        "sovereign_tenant_id": ["TENANT-SYN-A"],
+        "sovereign_user_id": ["USER-SYN-A-1"],
+        "sovereign_site_ids": ["SITE-SYN-A-1"]
+      },
+      "realmRoles": ["clinician"],
+      "credentials": [{ "type": "password", "value": "synthetic-local-only", "temporary": false }]
+    },
+    {
+      "username": "syn.auditor",
+      "email": "syn.auditor@example.test",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Synthetic",
+      "lastName": "Auditor",
+      "attributes": {
+        "sovereign_tenant_id": ["TENANT-SYN-A"],
+        "sovereign_user_id": ["USER-SYN-A-2"],
+        "sovereign_site_ids": ["SITE-SYN-A-1"]
+      },
+      "realmRoles": ["auditor"],
+      "credentials": [{ "type": "password", "value": "synthetic-local-only", "temporary": false }]
+    },
+    {
+      "username": "syn.tenant.b",
+      "email": "syn.tenant.b@example.test",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Synthetic",
+      "lastName": "TenantB",
+      "attributes": {
+        "sovereign_tenant_id": ["TENANT-SYN-B"],
+        "sovereign_user_id": ["USER-SYN-B-1"],
+        "sovereign_site_ids": ["SITE-SYN-B-1"]
+      },
+      "realmRoles": ["clinician"],
+      "credentials": [{ "type": "password", "value": "synthetic-local-only", "temporary": false }]
+    }
+  ]
+}
