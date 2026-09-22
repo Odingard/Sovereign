@@ -1,0 +1,118 @@
+# Sovereign role → capability matrix (WO-002B S1-10)
+#
+# Source of truth for role capability DEFAULTS. Compiled into
+# packages/domain/src/authority/role-matrix.generated.ts by
+# `pnpm run compile:roles`; a drift test fails the build if the two disagree.
+#
+# READ THIS BEFORE EDITING
+#
+# A role is not an authority grant (AGENTS.md doctrine 17, ADR-0010). Listing a
+# capability here makes it *eligible* to be granted to an actor in that role. It
+# grants nothing by itself. Authority always comes from an AuthorityGrant evaluated
+# by the domain AuthorizationEvaluator at the moment of the action.
+#
+# Capability names must exist in CanonicalCapabilities. The compiler rejects unknown
+# names rather than inventing them — a typo here would otherwise become a silently
+# ungrantable capability.
+
+version: 1
+
+# Capabilities requiring a second distinct human approver (spec §6.2).
+# Dual control is a property of the capability, not of the role: if a capability is
+# dual-control, it is dual-control for everyone who holds it.
+dual_control:
+  - authority_grant:issue_class_c
+  - authority_grant:revoke
+  - policy:configure_class_b
+
+# Capabilities that require an MFA claim in the request context (spec §6.2).
+requires_mfa:
+  - admin:tenant_manage
+  - admin:audit_read
+  - authority_grant:issue_class_c
+  - authority_grant:revoke
+  - policy:configure_class_b
+  - order:sign_transaction
+  - prior_auth:authorize_submission
+
+roles:
+  clinician:
+    description: Attending physician. The only role that may sign clinical transactions.
+    capabilities:
+      - clinical_state:read
+      - evidence:read
+      - evidence:propose_candidate
+      - intent:propose
+      - execution_graph:plan
+      - order:sign_transaction
+      - prior_auth:authorize_submission
+
+  app:
+    description: Advanced practice provider. Same clinical surface as clinician; scope is bounded by grant, not by role.
+    capabilities:
+      - clinical_state:read
+      - evidence:read
+      - evidence:propose_candidate
+      - intent:propose
+      - execution_graph:plan
+      - order:sign_transaction
+      - prior_auth:authorize_submission
+
+  nurse_ma:
+    description: Nurse or medical assistant. Reads and proposes; never signs.
+    capabilities:
+      - clinical_state:read
+      - evidence:read
+      - evidence:propose_candidate
+      - intent:propose
+
+  pa_specialist:
+    description: Prior-authorization specialist. Prepares submissions; a clinician authorizes them.
+    capabilities:
+      - clinical_state:read
+      - evidence:read
+      - execution_graph:plan
+
+  infusion_coordinator:
+    description: Coordinates infusion scheduling and access.
+    capabilities:
+      - clinical_state:read
+      - evidence:read
+      - staff:schedule_manage
+
+  practice_manager:
+    description: Operational management. No clinical authority.
+    capabilities:
+      - staff:schedule_manage
+
+  org_admin:
+    description: Tenant administration. Manages people and configuration, not clinical state.
+    capabilities:
+      - admin:tenant_manage
+      - staff:schedule_manage
+      - authority_grant:revoke
+
+  security_admin:
+    description: Security administration. May issue and revoke authority, under dual control.
+    capabilities:
+      - admin:tenant_manage
+      - admin:audit_read
+      - authority_grant:issue_class_c
+      - authority_grant:revoke
+      - policy:configure_class_b
+
+  auditor:
+    description: Read-only audit access. Deliberately holds no capability that changes state.
+    capabilities:
+      - admin:audit_read
+
+  support_readonly:
+    description: >
+      Support. Cannot read PHI columns by default; emergency access is a time-boxed
+      break-glass grant with dual approval (spec §6.3), never a role default.
+    capabilities: []
+
+  patient:
+    description: Registered for later stages. Not enabled in Stage 1 (spec §6.1).
+    enabled: false
+    capabilities: []
