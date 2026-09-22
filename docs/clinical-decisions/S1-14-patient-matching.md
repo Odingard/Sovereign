@@ -2,7 +2,7 @@
 
 **For:** Mark (Clinical reviewer)
 **From:** Andre Byrd (Founder), WO-002B/S1-14
-**Status:** PARTIALLY ANSWERED 2026-09-22 — questions 1, 3 and 4 decided; question 2 needs one clarification before S1-14 starts
+**Status:** ANSWERED 2026-09-22 — all four blocking questions decided. S1-14 is unblocked. Questions 5, 6 and 7 remain open but are configuration and do not block.
 **Raised:** 2026-09-22
 
 Nothing else in S1-14 is clinical. Everything below is; nothing here should be
@@ -33,19 +33,25 @@ records merge silently. That is the failure mode with no safe recovery.
 
 Proposed: demographics only. **No clinical facts. No pre-visit brief.**
 
-> **STILL OPEN.** The answer received — "clinician or practice manager only" — reads
-> as an *access* restriction on uncertain patients rather than an answer about the
-> brief. Recorded as such below, but the rendering question remains:
+> **DECIDED 2026-09-22 (Mark, via Founder): render with a warning banner.**
 >
-> **Does the pre-visit brief render for an uncertain patient — not at all, or with a
-> warning banner?**
+> The brief renders for an uncertain patient, carrying a visible warning that the
+> patient's identity is unconfirmed. It is not suppressed.
 >
-> Provisionally recorded: only `clinician` and `practice_manager` may view or act on an
-> uncertain patient. This does not by itself decide whether the brief renders.
-
-The argument for rendering nothing: a brief shown with a caveat still gets read, and a
-clinician under time pressure reads the content, not the banner. The argument against:
-an empty screen gives no path forward. We need your call on which failure is worse.
+> Also decided: only `clinician` and `practice_manager` may view or act on an
+> uncertain patient.
+>
+> **Residual risk, accepted.** The argument against a banner is that a clinician
+> between patients reads the content and not the warning. The decision is Mark's and
+> it is the right kind of call for a clinician to make — an empty screen gives no path
+> forward and invites a workaround. Implementation obligation that follows: the
+> warning must be structurally unskippable rather than decorative — it belongs in the
+> content flow, not as a dismissible chrome element, and the uncertain state must be
+> visible on every screen showing that patient, not only on entry. Recorded here so
+> the obligation travels with the decision.
+>
+> Clinical facts still do not attach to an uncertain patient (spec §7.2). The banner
+> governs what is shown, not what is stored.
 
 ### 3. Who may merge
 
