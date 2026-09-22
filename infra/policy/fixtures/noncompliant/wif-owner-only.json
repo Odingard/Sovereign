@@ -1,0 +1,19 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.iam.google_iam_workload_identity_pool_provider.github",
+      "type": "google_iam_workload_identity_pool_provider",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "workload_identity_pool_provider_id": "github",
+          "attribute_condition": "assertion.repository_owner=='Odingard'"
+        }
+      }
+    }
+  ]
+}

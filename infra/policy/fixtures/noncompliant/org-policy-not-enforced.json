@@ -1,0 +1,23 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.project.google_project_organization_policy.no_sa_keys",
+      "type": "google_project_organization_policy",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "constraint": "constraints/iam.disableServiceAccountKeyCreation",
+          "boolean_policy": [
+            {
+              "enforced": false
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

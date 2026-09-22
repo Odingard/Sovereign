@@ -1,0 +1,19 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.network.google_compute_subnetwork.private",
+      "type": "google_compute_subnetwork",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "sovereign-private",
+          "private_ip_google_access": false
+        }
+      }
+    }
+  ]
+}

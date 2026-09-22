@@ -1,0 +1,30 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.0",
+  "resource_changes": [
+    {
+      "address": "module.cloudrun.google_cloud_run_v2_service.api",
+      "type": "google_cloud_run_v2_service",
+      "mode": "managed",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "sovereign-api",
+          "location": "us-central1",
+          "ingress": "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER",
+          "template": [
+            {
+              "vpc_access": [
+                {
+                  "egress": "PRIVATE_RANGES_ONLY"
+                }
+              ],
+              "containers": []
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
