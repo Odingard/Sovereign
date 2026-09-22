@@ -1,0 +1,30 @@
+{
+  "$comment": "Tables deliberately NOT protected by row-level security (WO-002B S1-09, spec §7.1). Every entry needs a justification that survives review. The RLS linter reads this file; adding a table here is a security-reviewed change, and an unjustified entry is a finding, not a configuration.",
+  "exempt": [
+    {
+      "table": "kysely_migration",
+      "reason": "Migration bookkeeping. Holds no tenant data.",
+      "reviewed": "WO-002 gate record"
+    },
+    {
+      "table": "kysely_migration_lock",
+      "reason": "Migration bookkeeping. Holds no tenant data.",
+      "reviewed": "WO-002 gate record"
+    },
+    {
+      "table": "tenant",
+      "reason": "The tenant registry itself. Its primary key IS the tenant id, so a tenant-scoped policy would make the platform operator unable to create or list tenants. Contains no clinical data: slug, display name, status, region.",
+      "reviewed": "WO-002B S1-09"
+    },
+    {
+      "table": "session_revocation",
+      "reason": "The gateway refreshes a revocation list across all tenants every 30s (spec §4.2) before any tenant context exists for a rejected token. Scoping it per tenant would mean a revoked session stays live until its tenant is resolved, which is the opposite of the intent. Contains session ids and timestamps, no clinical data.",
+      "reviewed": "WO-002B S1-09"
+    },
+    {
+      "table": "kill_switch",
+      "reason": "A kill switch may be global (tenant_id NULL) to disable a capability platform-wide during an incident. A tenant-scoped policy would hide global switches from every tenant, defeating the control.",
+      "reviewed": "WO-002B S1-09"
+    }
+  ]
+}
