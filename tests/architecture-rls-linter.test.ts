@@ -37,7 +37,19 @@ describe("Architecture & Schema Isolation Linter (WO-002)", () => {
 
   beforeAll(async () => {
     db = createPostgresKysely(ADMIN_DB_URL);
-    await runMigrationsUp(db);
+    // Test files share one database. runMigrationsUp is not idempotent, and file
+    // order is not guaranteed, so only migrate when the schema is absent.
+    const migrated = await sql<{ exists: boolean }>`
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'clinical_evidence'
+      ) AS exists
+    `
+      .execute(db)
+      .then((r) => r.rows[0]?.exists === true);
+    if (!migrated) {
+      await runMigrationsUp(db);
+    }
     appDb = createPostgresKysely(APP_DB_URL);
   });
 
