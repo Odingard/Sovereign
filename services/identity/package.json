@@ -1,0 +1,16 @@
+{
+  "name": "@sovereign/service-identity",
+  "version": "0.1.0",
+  "description": "Sovereign Identity - tenants, sites, approvals, kill switches and session revocation",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*",
+    "@sovereign/kernel": "workspace:*",
+    "kysely": "^0.28.14"
+  }
+}

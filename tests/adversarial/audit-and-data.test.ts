@@ -27,6 +27,11 @@ import {
   queryAuditEvents,
   verifyChain,
 } from "@sovereign/service-audit";
+import {
+  type ApprovalRecord,
+  applyKillSwitchChange,
+  isCapabilityEnabled,
+} from "@sovereign/service-identity";
 import { type Kysely, sql } from "kysely";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
@@ -343,18 +348,104 @@ describe("§10.16 a disabled capability degrades truthfully", () => {
     await expect(requireCapabilityEnabled(broken, "prior_auth:submit", TENANT_A)).rejects.toThrow();
   });
 
-  it("records who changed a switch and under which approval", async () => {
-    // A kill switch with no approval reference is a production change nobody
-    // authorised. The column exists so the absence is visible.
-    await sql`
-      INSERT INTO kill_switch (id, tenant_id, capability, enabled, changed_by, approval_id)
-      VALUES ('KS-SYN-1', ${TENANT_A}, 'prior_auth:submit', false, 'USER-SYN-1', NULL)
+  const approved: ApprovalRecord = {
+    approvalId: "APR-SYN-1",
+    requestedBy: "USER-SYN-1",
+    approvedBy: "USER-SYN-2",
+    status: "approved",
+  };
+
+  const change = (over: Record<string, unknown> = {}) => ({
+    tenantId: TENANT_A,
+    capability: "prior_auth:submit",
+    enabled: false,
+    changedBy: "USER-SYN-1",
+    environment: "prod" as const,
+    approval: approved,
+    ...over,
+  });
+
+  it("refuses a production toggle with no approval at all", async () => {
+    // Spec §10.16. A kill switch is the one control that turns a safety feature off
+    // across a whole tenant in a single statement.
+    await expect(
+      applyKillSwitchChange(admin, change({ approval: undefined })),
+    ).rejects.toMatchObject({ httpStatus: 409, code: "E_DUAL_CONTROL_REQUIRED" });
+    const rows = await sql<{ n: string }>`
+      SELECT count(*) AS n FROM kill_switch WHERE tenant_id = ${TENANT_A}
     `.execute(admin);
+    expect(rows.rows[0]?.n).toBe("0");
+  });
+
+  it("refuses a pending approval", async () => {
+    // A pending approval is not an approval. Accepting one would satisfy the control
+    // by opening a request rather than by getting an answer to it.
+    await expect(
+      applyKillSwitchChange(
+        admin,
+        change({ approval: { ...approved, status: "pending", approvedBy: null } }),
+      ),
+    ).rejects.toMatchObject({ httpStatus: 409 });
+  });
+
+  it("refuses a toggle the changer approved for themselves", async () => {
+    await expect(
+      applyKillSwitchChange(admin, change({ approval: { ...approved, approvedBy: "USER-SYN-1" } })),
+    ).rejects.toMatchObject({ httpStatus: 409 });
+  });
+
+  it("refuses a self-granted approval even when a third party applies it", async () => {
+    // The applier being somebody else does not repair an approval the requester gave
+    // themselves.
+    await expect(
+      applyKillSwitchChange(
+        admin,
+        change({
+          changedBy: "USER-SYN-3",
+          approval: { ...approved, requestedBy: "USER-SYN-9", approvedBy: "USER-SYN-9" },
+        }),
+      ),
+    ).rejects.toMatchObject({ httpStatus: 409 });
+  });
+
+  it("applies a properly approved toggle and records who and under which approval", async () => {
+    const result = await applyKillSwitchChange(admin, change());
+    expect(result.enabled).toBe(false);
+    expect(result.approvalId).toBe("APR-SYN-1");
+    expect(await isCapabilityEnabled(admin, "prior_auth:submit", TENANT_A)).toBe(false);
+
     const rows = await sql<{ approval_id: string | null; changed_by: string }>`
-      SELECT approval_id, changed_by FROM kill_switch WHERE id = 'KS-SYN-1'
+      SELECT approval_id, changed_by FROM kill_switch WHERE tenant_id = ${TENANT_A}
     `.execute(admin);
     expect(rows.rows[0]?.changed_by).toBe("USER-SYN-1");
-    expect(rows.rows[0]?.approval_id).toBeNull();
+    expect(rows.rows[0]?.approval_id).toBe("APR-SYN-1");
+  });
+
+  it("requires approval to re-enable as well as to disable", async () => {
+    // Turning a capability back on is not obviously the safe direction: it can
+    // re-open the path an incident was contained by.
+    await applyKillSwitchChange(admin, change());
+    await expect(
+      applyKillSwitchChange(admin, change({ enabled: true, approval: undefined })),
+    ).rejects.toMatchObject({ httpStatus: 409 });
+    expect(await isCapabilityEnabled(admin, "prior_auth:submit", TENANT_A)).toBe(false);
+  });
+
+  it("does not require approval in dev, on purpose", async () => {
+    // An approval workflow in dev trains people to click through approvals, and an
+    // approval people click through is worse than none: it looks like a control in
+    // the audit trail.
+    const result = await applyKillSwitchChange(
+      admin,
+      change({ environment: "dev", approval: undefined }),
+    );
+    expect(result.approvalId).toBeNull();
+  });
+
+  it("treats a capability nobody disabled as enabled", async () => {
+    // Absent means on. Requiring a row per capability would let a missing row take a
+    // working clinical tool away for no reason.
+    expect(await isCapabilityEnabled(admin, "never:configured", TENANT_A)).toBe(true);
   });
 });
 

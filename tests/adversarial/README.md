@@ -12,22 +12,17 @@ a function behaves; these prove the *system* refuses.
 | Attack | State | Where |
 |---|---|---|
 | 1, 2, 3, 4, 6, 8, 10, 13, 15, 19, 20, 21, 22, 24 | runs | `isolation.test.ts` |
-| 5, 9, 11, 12, 17, 18 | runs | `audit-and-data.test.ts` |
+| 5, 9, 11, 12, 16, 17, 18 | runs | `audit-and-data.test.ts` |
 | 7 | runs | `isolation.test.ts` — site scoping, added with the control it tests (G-56) |
-| 16 | runs in part | `audit-and-data.test.ts` — see below |
+| 16 | runs | `audit-and-data.test.ts` |
 | 14 (egress allowlist), 23 (ring rollback) | skipped, reason attached | blocked on the WO-002A cloud block |
 
-**22 of 24 run. 2 are skipped with a stated reason, both blocked on the cloud block. None are absent.**
+**22 of 24 run in full. 2 are skipped with a stated reason, both blocked on the cloud block. None are absent, and none are partial.**
 
-Two attacks were absent when this table was first written, because the controls they
-attack did not exist. Both controls were then built rather than the tests waved
-through — site scoping (G-56) and break-glass (G-57). What remains partial:
-
-- **§10.16 kill switch.** The half that exists is tested: a disabled capability refuses
-  rather than returning an empty result, the registry fails closed when unreadable, and
-  a switch records who changed it and under which approval. The other half — "toggle in
-  prod without approval → 409" — needs the identity service's switch API, which is not
-  built (G-58).
+Three attacks could not be written when this table was first drawn up, because the
+controls they attack did not exist: site scoping (G-56), break-glass (G-57) and the
+kill-switch change API (G-58). All three controls were built rather than the tests
+waved through, which is the only honest way to close a row like that.
 
 A suite that silently contained 15 tests when the spec calls for 24 read as complete
 for two work orders (G-59). This table exists so it reads as what it is.
