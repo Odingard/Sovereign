@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 /**
  * @file Architecture RLS Linter & Provider Independence Verification
  * @description Inspects the live migrated PostgreSQL schema to guarantee that 100% of tenant-scoped tables
@@ -26,7 +27,13 @@ describe("Architecture & Schema Isolation Linter (WO-002)", () => {
   let appDb: Kysely<SovereignPostgresDatabase>;
 
   // Tables that are globally scoped or internal to migration runners
-  const GLOBAL_NON_TENANT_WHITELIST = new Set(["kysely_migration", "kysely_migration_lock"]);
+  // Exemptions are data, not code. config/rls-exempt.json carries a justification per
+  // table (spec §5.2) so adding one is a reviewable change rather than an edit buried
+  // in a test file.
+  const exemptConfig = JSON.parse(readFileSync("config/rls-exempt.json", "utf8")) as {
+    exempt: { table: string; reason: string; reviewed: string }[];
+  };
+  const GLOBAL_NON_TENANT_WHITELIST = new Set(exemptConfig.exempt.map((e) => e.table));
 
   beforeAll(async () => {
     db = createPostgresKysely(ADMIN_DB_URL);
@@ -132,5 +139,43 @@ describe("Architecture & Schema Isolation Linter (WO-002)", () => {
     // Verifies that local development environment operates fully standalone
     expect(process.env.GOOGLE_APPLICATION_CREDENTIALS).toBeUndefined();
     expect(process.env.GCP_PROJECT).toBeUndefined();
+  });
+});
+
+describe("RLS exemption register (S1-09)", () => {
+  it("justifies every exemption", () => {
+    // An exemption without a reason is a finding, not a configuration. This is the
+    // only place tenant isolation is deliberately switched off, so the reasons have
+    // to survive a reader who was not in the room.
+    const config = JSON.parse(readFileSync("config/rls-exempt.json", "utf8")) as {
+      exempt: { table: string; reason: string; reviewed: string }[];
+    };
+    expect(config.exempt.length).toBeGreaterThan(0);
+    for (const entry of config.exempt) {
+      expect(entry.table, "every entry names a table").toBeTruthy();
+      expect(entry.reason.length, `${entry.table} needs a substantive reason`).toBeGreaterThan(40);
+      expect(entry.reviewed, `${entry.table} needs a review reference`).toBeTruthy();
+    }
+  });
+
+  it("does not exempt any table holding clinical data", () => {
+    const config = JSON.parse(readFileSync("config/rls-exempt.json", "utf8")) as {
+      exempt: { table: string }[];
+    };
+    const clinical = [
+      "clinical_evidence",
+      "clinical_states",
+      "clinical_intents",
+      "execution_graphs",
+      "therapy_access_cases",
+      "actors",
+      "authority_grants",
+      "authorization_audit_log",
+      "patient_identity_mappings",
+      "tenant_key",
+    ];
+    for (const table of config.exempt.map((e) => e.table)) {
+      expect(clinical, `${table} must never be RLS-exempt`).not.toContain(table);
+    }
   });
 });
