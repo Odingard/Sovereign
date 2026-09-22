@@ -1,0 +1,14 @@
+{
+  "name": "@sovereign/service-metering",
+  "version": "0.1.0",
+  "description": "Sovereign Metering - billable unit projection from canonical domain events",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}
