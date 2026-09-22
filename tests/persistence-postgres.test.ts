@@ -149,8 +149,8 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
         sourceLocator: "ehr://notes/encounter-991",
         contentSha256: "1".repeat(64),
         contentMimeType: "text/markdown",
-        // PR-A2 mapping: syntheticness is carried by classification.origin
-        // (SYNTHETIC_SIMULATION) below, not by the extraction lineage.
+        // ADR-0014: synthetic-ness is carried by classification.origin below, not by
+        // the extraction lineage.
         extractionLineage: ExtractionLineage.DETERMINISTIC_PARSER,
       },
       standardTemporal,
@@ -316,7 +316,7 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
 
     graph = graph.addNode({
       nodeId: "NODE-PRIOR-AUTH-SUBMIT" as ExecutionNodeId,
-      // PR-A2 mapping: `nodeType` -> `actionType`; `authorityClass` is required.
+      // PR-A2: `nodeType` -> `actionType`; `authorityClass` is required.
       actionType: "SUBMIT_ELECTRONIC_PA",
       authorityClass: AuthorityClass.CLASS_C_CLINICIAN_AUTH,
       state: ExecutionNodeState.READY,
@@ -337,7 +337,7 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
       attemptId: "ATTEMPT-01" as ExecutionAttemptId,
       nodeId: "NODE-PRIOR-AUTH-SUBMIT" as ExecutionNodeId,
       attemptNumber: 1,
-      // PR-A2 mapping: former `externalTransactionId: "COVERMYMEDS-TX-99001"` has no
+      // PR-A2: former `externalTransactionId: "COVERMYMEDS-TX-99001"` has no
       // field on ExternalExecutionAttempt; the system name is kept as targetSystem.
       targetSystem: "COVERMYMEDS",
       dispatchedAt: new Date(),
@@ -355,7 +355,7 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
       {
         confirmationId: "CONF-01" as ConfirmationId,
         nodeId: "NODE-PRIOR-AUTH-SUBMIT" as ExecutionNodeId,
-        // PR-A2 mapping: `confirmedAt` -> `externalTimestamp`;
+        // PR-A2: `confirmedAt` -> `externalTimestamp`;
         // `verifyingArtifactHash` -> `confirmationPayloadSha256`; `channel` and
         // `confirmationNarrative` are required and had no prior value.
         externalTimestamp: new Date(),
