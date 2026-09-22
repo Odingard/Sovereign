@@ -34,6 +34,9 @@ importers:
       '@sovereign/provider-ai-fake':
         specifier: workspace:*
         version: link:providers/ai-fake
+      '@sovereign/telemetry':
+        specifier: workspace:*
+        version: link:packages/telemetry
       '@types/node':
         specifier: ^20.17.19
         version: 20.19.43

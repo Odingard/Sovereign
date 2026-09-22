@@ -114,6 +114,17 @@ export const LOG_FIELD_PROHIBITED = [
   "note",
   "narrative",
   "text",
+  // Clinical content. Added in S1-05 after the PHI-leak suite showed `diagnosis`
+  // was neither allowlisted nor prohibited — it fell into the unnamed middle, which
+  // is safe but silent. Naming them makes the drop visible to a developer.
+  "diagnosis",
+  "condition",
+  "medication",
+  "allergy",
+  "procedure",
+  "labResult",
+  "vitals",
+  "observation",
   "body",
   "requestBody",
   "responseBody",
