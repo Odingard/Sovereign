@@ -43,6 +43,9 @@ importers:
       '@sovereign/provider-ai-fake':
         specifier: workspace:*
         version: link:providers/ai-fake
+      '@sovereign/service-audit':
+        specifier: workspace:*
+        version: link:services/audit
       '@sovereign/telemetry':
         specifier: workspace:*
         version: link:packages/telemetry
@@ -314,6 +317,21 @@ importers:
       '@sovereign/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+
+  services/audit:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@sovereign/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      kysely:
+        specifier: ^0.28.14
+        version: 0.28.17
 
 packages:
 
