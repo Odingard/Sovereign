@@ -32,6 +32,7 @@
     "@sovereign/persistence": "workspace:*",
     "@sovereign/service-audit": "workspace:*",
     "@sovereign/service-patient-context": "workspace:*",
+    "@sovereign/service-retention": "workspace:*",
     "@sovereign/provider-ai-fake": "workspace:*",
     "@sovereign/telemetry": "workspace:*",
     "@types/node": "^20.17.19",

@@ -1,0 +1,15 @@
+{
+  "name": "@sovereign/service-retention",
+  "version": "0.1.0",
+  "description": "Sovereign Retention - retention classes, legal hold and crypto-shred erasure",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sovereign/contracts": "workspace:*",
+    "@sovereign/crypto": "workspace:*",
+    "@sovereign/domain": "workspace:*"
+  }
+}

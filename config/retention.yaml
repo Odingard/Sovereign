@@ -1,0 +1,84 @@
+# Sovereign retention classes (WO-002C S1-16)
+#
+# Source of truth for how long each class of data is kept and what happens at the end.
+# Derived from docs/DATA_CLASSIFICATION_SCHEDULE.md; compiled and enforced by
+# packages/domain retention rules and the erasure jobs.
+#
+# READ THIS BEFORE EDITING
+#
+# A retention period is a legal MINIMUM for clinical and audit data, not a target.
+# Shortening `legal_clinical` or `audit` is a compliance decision, not a configuration
+# change, and requires an ADR plus security review.
+#
+# `erasure` says what happens when the period expires:
+#   crypto_shred  destroy the per-tenant key version; ciphertext becomes unreadable
+#   purge         delete the rows outright
+#   tombstone     retain identifiers and hashes, drop the content
+#
+# Nothing here overrides a legal hold. Every erasure job checks holds first and
+# refuses (spec §7.8).
+
+version: 1
+
+classes:
+  legal_clinical:
+    description: Clinical state, intent, evidence and provenance.
+    retain_days: 3650 # 10 years from last encounter, or the state legal minimum
+    basis: Medical record retention laws
+    erasure: crypto_shred
+    minimum: true
+
+  audit:
+    description: Clinical audit chain and anchors.
+    retain_days: 2555 # 7 years
+    basis: HIPAA Security Rule 164.312(b)
+    erasure: crypto_shred
+    minimum: true
+    # The chain is append-only and hash-linked. Erasing an event would break
+    # verification for every event after it, so audit data is crypto-shredded at the
+    # tenant level and never row-deleted.
+    row_deletion_permitted: false
+
+  operational:
+    description: Logs, metrics and traces. Non-PHI by ADR-0007 section 5.
+    retain_days: 30
+    basis: SOC 2 and infrastructure diagnostics
+    erasure: purge
+    minimum: false
+
+  recording:
+    description: Ambient capture audio. Not produced in Stage 1.
+    retain_days: 30
+    basis: Consent-bound; shortest period that supports review
+    erasure: purge
+    minimum: false
+
+  generated_draft:
+    description: AI-generated candidates not yet accepted by a clinician.
+    retain_days: 90
+    basis: Evaluation and safety review
+    erasure: purge
+    minimum: false
+    # A draft is not clinical state. It carries no authority and must never be
+    # retained as though it were a record (ADR-0001).
+
+  support:
+    description: Support tickets and diagnostic bundles.
+    retain_days: 365
+    basis: Operational
+    erasure: purge
+    minimum: false
+
+  analytics:
+    description: Aggregated, de-identified usage metrics.
+    retain_days: 730
+    basis: Product analytics
+    erasure: purge
+    minimum: false
+
+  synthetic:
+    description: Synthetic fixtures and test data.
+    retain_days: 90
+    basis: None. Synthetic data has no retention obligation.
+    erasure: purge
+    minimum: false

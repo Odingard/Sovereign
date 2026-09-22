@@ -52,6 +52,9 @@ importers:
       '@sovereign/service-patient-context':
         specifier: workspace:*
         version: link:services/patient-context
+      '@sovereign/service-retention':
+        specifier: workspace:*
+        version: link:services/retention
       '@sovereign/telemetry':
         specifier: workspace:*
         version: link:packages/telemetry
@@ -355,6 +358,18 @@ importers:
         version: 0.28.17
 
   services/patient-context:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@sovereign/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+
+  services/retention:
     dependencies:
       '@sovereign/contracts':
         specifier: workspace:*
