@@ -35,6 +35,7 @@ import type {
 import { IntegrationHealthTracker, TenantRateLimiter, buildGateway } from "@sovereign/gateway";
 import {
   ErrorCode,
+  type SiteScope,
   type SovereignError,
   checkIdempotency,
   requireCapability,
@@ -108,6 +109,9 @@ const requestFor = (targetTenant: string): AuthorizationRequest => ({
   },
 });
 
+/** A resource that is not site-scoped. The site check is a no-op for these. */
+const TENANT_WIDE: SiteScope = { grantedSiteIds: [], resourceSiteId: null };
+
 beforeAll(async () => {
   const pair = await generateKeyPair("RS256");
   privateKey = pair.privateKey;
@@ -146,6 +150,7 @@ describe("§10.1 cross-tenant read returns 404, never 403", () => {
         evaluator(AuthorizationOutcome.PERMIT),
         requestFor(TENANT_B),
         TENANT_A,
+        TENANT_WIDE,
       );
       throw new Error("expected refusal");
     } catch (error) {
@@ -162,7 +167,9 @@ describe("§10.1 cross-tenant read returns 404, never 403", () => {
         return { outcome: AuthorizationOutcome.PERMIT } as unknown as AuthorizationDecision;
       },
     };
-    await expect(requireCapability(spy, requestFor(TENANT_B), TENANT_A)).rejects.toThrow();
+    await expect(
+      requireCapability(spy, requestFor(TENANT_B), TENANT_A, TENANT_WIDE),
+    ).rejects.toThrow();
     expect(called).toBe(false);
   });
 });
@@ -301,6 +308,89 @@ describe("§10.6 role matrix sweep", () => {
     for (const role of ["practice_manager", "org_admin", "security_admin", "auditor"]) {
       expect(capabilitiesForRole(role)).not.toContain("order:sign_transaction");
     }
+  });
+});
+
+describe("§10.7 a user granted one site cannot reach another site's patient", () => {
+  const evaluatorThatWouldPermit = evaluator(AuthorizationOutcome.PERMIT);
+
+  function scoped(granted: string[], resourceSite: string | null): SiteScope {
+    return { grantedSiteIds: granted, resourceSiteId: resourceSite };
+  }
+
+  it("returns 404, not 403, for a patient at a site the caller was not granted", async () => {
+    // Within a tenant, a 403 confirms that a patient is being seen at another of the
+    // organisation's clinics. That is itself a disclosure, so the answer is the same
+    // one a non-existent patient gets.
+    await expect(
+      requireCapability(
+        evaluatorThatWouldPermit,
+        requestFor(TENANT_A),
+        TENANT_A,
+        scoped(["SITE-X"], "SITE-Y"),
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+  });
+
+  it("refuses before the evaluator runs", async () => {
+    let called = false;
+    const spy: AuthorizationEvaluator = {
+      evaluate: async () => {
+        called = true;
+        return { outcome: AuthorizationOutcome.PERMIT } as unknown as AuthorizationDecision;
+      },
+    };
+    await expect(
+      requireCapability(spy, requestFor(TENANT_A), TENANT_A, scoped(["SITE-X"], "SITE-Y")),
+    ).rejects.toThrow();
+    expect(called).toBe(false);
+  });
+
+  it("permits the caller's own site", async () => {
+    const decision = await requireCapability(
+      evaluatorThatWouldPermit,
+      requestFor(TENANT_A),
+      TENANT_A,
+      scoped(["SITE-X", "SITE-Y"], "SITE-Y"),
+    );
+    expect(decision.permitted).toBe(true);
+  });
+
+  it("treats no granted sites as no access, never as every site", async () => {
+    // Breadth of access is granted, never inferred from the absence of a restriction
+    // (AGENTS.md doctrine 17). A user who works across a whole tenant is given every
+    // site explicitly — a statement somebody made, rather than a silence somebody read.
+    await expect(
+      requireCapability(
+        evaluatorThatWouldPermit,
+        requestFor(TENANT_A),
+        TENANT_A,
+        scoped([], "SITE-X"),
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
+  });
+
+  it("leaves a genuinely tenant-wide resource alone", async () => {
+    const decision = await requireCapability(
+      evaluatorThatWouldPermit,
+      requestFor(TENANT_A),
+      TENANT_A,
+      scoped([], null),
+    );
+    expect(decision.permitted).toBe(true);
+  });
+
+  it("checks the tenant before the site, so a cross-tenant call cannot be masked", async () => {
+    // Granting the caller the target's site must not make another tenant's resource
+    // reachable. Both refuse, and the tenant check is the one that fires.
+    await expect(
+      requireCapability(
+        evaluatorThatWouldPermit,
+        requestFor(TENANT_B),
+        TENANT_A,
+        scoped(["SITE-X"], "SITE-X"),
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.NOT_FOUND });
   });
 });
 

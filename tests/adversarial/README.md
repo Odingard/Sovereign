@@ -13,19 +13,16 @@ a function behaves; these prove the *system* refuses.
 |---|---|---|
 | 1, 2, 3, 4, 6, 8, 10, 13, 19, 20, 21, 22, 24 | runs | `isolation.test.ts` |
 | 5, 9, 11, 12, 17, 18 | runs | `audit-and-data.test.ts` |
+| 7 | runs | `isolation.test.ts` — site scoping, added with the control it tests (G-56) |
 | 16 | runs in part | `audit-and-data.test.ts` — see below |
 | 14 (egress allowlist), 23 (ring rollback) | skipped, reason attached | blocked on the WO-002A cloud block |
-| 7 (site scoping), 15 (break-glass) | **absent — the control does not exist yet** | G-56, G-57 |
+| 15 (break-glass) | **absent — the control does not exist yet** | G-57 |
 
-**20 of 24 run. 2 are skipped with a stated reason. 2 are absent.**
+**21 of 24 run. 2 are skipped with a stated reason. 1 is absent.**
 
-That last row is the one worth reading twice. Tests 7 and 15 are not missing because
-nobody got to them; they are missing because there is nothing yet to attack:
+That last row is the one worth reading twice. Test 15 is not missing because nobody
+got to it; it is missing because there is nothing yet to attack:
 
-- **§10.7 site scoping.** `siteIds` is carried in every verified request context and
-  in every token, and is read by nothing. A user granted site X can today reach a
-  patient in site Y, because no code compares the two. Writing a test that passes
-  against no control would be worse than having no test (G-56).
 - **§10.15 break-glass.** Emergency PHI access is specified as a time-boxed grant with
   dual approval (§6.3), and `support_readonly` correctly holds no capabilities. The
   grant path itself is unbuilt, so there is no "with grant → allowed, reason recorded,
