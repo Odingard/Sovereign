@@ -64,6 +64,9 @@ importers:
       '@sovereign/telemetry':
         specifier: workspace:*
         version: link:packages/telemetry
+      '@sovereign/ui':
+        specifier: workspace:*
+        version: link:packages/ui
       '@types/node':
         specifier: ^20.17.19
         version: 20.19.43
@@ -304,6 +307,15 @@ importers:
         version: 8.23.1
 
   packages/telemetry:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../domain
+
+  packages/ui:
     dependencies:
       '@sovereign/contracts':
         specifier: workspace:*

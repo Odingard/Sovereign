@@ -38,6 +38,7 @@
     "@sovereign/service-retention": "workspace:*",
     "@sovereign/provider-ai-fake": "workspace:*",
     "@sovereign/telemetry": "workspace:*",
+    "@sovereign/ui": "workspace:*",
     "@types/node": "^20.17.19",
     "@types/pg": "^8.11.11",
     "@vitest/coverage-v8": "^3.2.7",
