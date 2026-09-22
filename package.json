@@ -31,6 +31,8 @@
     "@sovereign/crypto": "workspace:*",
     "@sovereign/domain": "workspace:*",
     "@sovereign/gateway": "workspace:*",
+    "@sovereign/job-audit-anchor": "workspace:*",
+    "@sovereign/job-outbox-relay": "workspace:*",
     "@sovereign/kernel": "workspace:*",
     "@sovereign/persistence": "workspace:*",
     "@sovereign/service-audit": "workspace:*",

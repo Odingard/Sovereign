@@ -40,6 +40,12 @@ importers:
       '@sovereign/gateway':
         specifier: workspace:*
         version: link:apps/gateway
+      '@sovereign/job-audit-anchor':
+        specifier: workspace:*
+        version: link:jobs/audit-anchor
+      '@sovereign/job-outbox-relay':
+        specifier: workspace:*
+        version: link:jobs/outbox-relay
       '@sovereign/kernel':
         specifier: workspace:*
         version: link:packages/kernel
@@ -239,6 +245,27 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
+
+  jobs/audit-anchor:
+    dependencies:
+      '@sovereign/service-audit':
+        specifier: workspace:*
+        version: link:../../services/audit
+      kysely:
+        specifier: ^0.28.14
+        version: 0.28.17
+
+  jobs/outbox-relay:
+    dependencies:
+      '@sovereign/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@sovereign/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      kysely:
+        specifier: ^0.28.14
+        version: 0.28.17
 
   packages/application:
     dependencies:

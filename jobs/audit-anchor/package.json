@@ -1,0 +1,12 @@
+{
+  "name": "@sovereign/job-audit-anchor",
+  "version": "0.1.0",
+  "description": "Sovereign Audit Anchor - nightly per-tenant chain anchor to retention-locked storage",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@sovereign/service-audit": "workspace:*",
+    "kysely": "^0.28.14"
+  }
+}

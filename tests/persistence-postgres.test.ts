@@ -504,13 +504,18 @@ describe("Sovereign PostgreSQL Canonical Persistence Integration Tests", () => {
 
     await outboxRepo.insertEvent(domainEvent);
 
-    const undispatched = await outboxRepo.fetchUndispatchedEvents(10);
-    expect(undispatched.length).toBeGreaterThan(0);
-    const eventRow = undispatched.find((e) => e.id === "EVT-OUTBOX-001");
+    // Reading the outbox belongs to jobs/outbox-relay (see tests/jobs.test.ts). What
+    // this repository owes is the row itself, undispatched, in the writing tenant.
+    const eventRow = await db
+      .selectFrom("domain_outbox_events")
+      .selectAll()
+      .where("tenant_id", "=", tenantA.tenantId)
+      .where("id", "=", "EVT-OUTBOX-001")
+      .executeTakeFirst();
     expect(eventRow).toBeDefined();
-    expect(eventRow.event_name).toBe("ClinicalEvidenceRecorded");
-    expect(eventRow.tenant_id).toBe(tenantA.tenantId);
-    expect(eventRow.correlation_id).toBe("CORR-12345");
+    expect(eventRow?.event_name).toBe("ClinicalEvidenceRecorded");
+    expect(eventRow?.correlation_id).toBe("CORR-12345");
+    expect(eventRow?.dispatched_at).toBeNull();
   });
 
   // 10. Schema Version Evolution without Aggregate Version increment
